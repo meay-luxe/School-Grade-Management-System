@@ -1,753 +1,1798 @@
 /* ============================================================
-   GradeMS — Main Application JavaScript
-   Handles: navigation, page rendering, UI interactions
+   APP.JS — Main Application JS
+   Navigation · UI · Modals · Toasts · Tables · Charts
+   School Grade Management System
    ============================================================ */
 
-'use strict';
+"use strict";
 
-/* ── MOCK DATA (replace with PHP/fetch calls in production) ── */
-const DATA = {
-  users: [
-    { id:1, name:'Dr. John Admin',   email:'admin@school.edu',    role:'Admin',   status:'Active',   created:'Jan 2024' },
-    { id:2, name:'Prof. Ana Reyes',  email:'ana.reyes@school.edu',role:'Teacher', status:'Active',   created:'Jan 2024' },
-    { id:3, name:'Prof. Mark Torres',email:'mark.t@school.edu',   role:'Teacher', status:'Active',   created:'Feb 2024' },
-    { id:4, name:'Maria Santos',     email:'maria.s@school.edu',  role:'Student', status:'Active',   created:'Jun 2024' },
-    { id:5, name:'Juan Dela Cruz',   email:'juan.dc@school.edu',  role:'Student', status:'Active',   created:'Jun 2024' },
-    { id:6, name:'Ana Lim',          email:'ana.lim@school.edu',  role:'Student', status:'Inactive', created:'Jun 2024' },
-    { id:7, name:'Carlo Ramos',      email:'carlo.r@school.edu',  role:'Student', status:'Active',   created:'Jun 2024' },
-  ],
-  students: [
-    { num:'2024-0001', name:'Maria Santos',   course:'BSCS', year:'2nd Year', section:'A' },
-    { num:'2024-0002', name:'Juan Dela Cruz', course:'BSIT', year:'1st Year', section:'B' },
-    { num:'2024-0003', name:'Ana Lim',        course:'BSCS', year:'3rd Year', section:'A' },
-    { num:'2024-0004', name:'Carlo Ramos',    course:'BSEd', year:'2nd Year', section:'C' },
-    { num:'2024-0005', name:'Rina Flores',    course:'BSA',  year:'1st Year', section:'A' },
-    { num:'2024-0006', name:'Leo Bautista',   course:'BSCS', year:'4th Year', section:'B' },
-    { num:'2024-0007', name:'Joy Mendoza',    course:'BSIT', year:'3rd Year', section:'A' },
-  ],
-  subjects: [
-    { code:'MATH101', name:'Mathematics 101',   units:3, teacher:'Prof. Ana Reyes',  enrolled:35 },
-    { code:'PHY201',  name:'Physics 201',        units:4, teacher:'Prof. Mark Torres',enrolled:28 },
-    { code:'ENG101',  name:'English 101',        units:3, teacher:'Dr. Lisa Garcia', enrolled:40 },
-    { code:'CS101',   name:'CS Fundamentals',    units:3, teacher:'Prof. Ana Reyes', enrolled:33 },
-    { code:'HIST101', name:'Philippine History', units:3, teacher:'Prof. Jay Santos',enrolled:45 },
-  ],
-  enrollments: [
-    { student:'Maria Santos',   subject:'Mathematics 101', sem:'1st Sem 2024-25', status:'Active' },
-    { student:'Juan Dela Cruz', subject:'Physics 201',     sem:'1st Sem 2024-25', status:'Active' },
-    { student:'Ana Lim',        subject:'English 101',     sem:'1st Sem 2024-25', status:'Active' },
-    { student:'Carlo Ramos',    subject:'CS Fundamentals', sem:'1st Sem 2024-25', status:'Active' },
-    { student:'Rina Flores',    subject:'Mathematics 101', sem:'1st Sem 2024-25', status:'Active' },
-  ],
-  gradesAdmin: [
-    { student:'Maria Santos',   subject:'Mathematics 101', mid:88, fin:92, final:90.0, remarks:'Passed',     locked:false },
-    { student:'Juan Dela Cruz', subject:'Physics 201',     mid:72, fin:68, final:70.0, remarks:'Failed',     locked:false },
-    { student:'Ana Lim',        subject:'English 101',     mid:95, fin:97, final:96.0, remarks:'Passed',     locked:true  },
-    { student:'Carlo Ramos',    subject:'CS Fundamentals', mid:80, fin:null,final:null,remarks:'Incomplete', locked:false },
-    { student:'Rina Flores',    subject:'Mathematics 101', mid:60, fin:62, final:61.0, remarks:'Failed',     locked:false },
-    { student:'Leo Bautista',   subject:'Mathematics 101', mid:91, fin:89, final:90.0, remarks:'Passed',     locked:true  },
-    { student:'Joy Mendoza',    subject:'CS Fundamentals', mid:85, fin:88, final:86.5, remarks:'Passed',     locked:false },
-  ],
-  gradeEntry: [
-    { num:'2024-0001', name:'Maria Santos',   mid:88, fin:92   },
-    { num:'2024-0002', name:'Juan Dela Cruz', mid:72, fin:68   },
-    { num:'2024-0003', name:'Ana Lim',        mid:95, fin:97   },
-    { num:'2024-0004', name:'Carlo Ramos',    mid:80, fin:null },
-    { num:'2024-0005', name:'Rina Flores',    mid:60, fin:62   },
-    { num:'2024-0006', name:'Leo Bautista',   mid:91, fin:89   },
-  ],
-  studentGrades: [
-    { subject:'Mathematics 101',   units:3, mid:88, fin:92,   final:90.0, status:'Passed'     },
-    { subject:'Physics 201',        units:4, mid:85, fin:88,   final:86.5, status:'Passed'     },
-    { subject:'English 101',        units:3, mid:92, fin:95,   final:93.5, status:'Passed'     },
-    { subject:'CS Fundamentals',    units:3, mid:91, fin:89,   final:90.0, status:'Passed'     },
-    { subject:'Philippine History', units:3, mid:78, fin:null, final:null, status:'Incomplete' },
-  ],
-  audit: [
-    { action:'Grade updated — Maria Santos · MATH101 · Final: 90',  user:'Prof. Ana Reyes', time:'2 min ago',  color:'#4f9eff' },
-    { action:'Student account created — Joy Mendoza',                 user:'Dr. John Admin',  time:'15 min ago', color:'#4ade80' },
-    { action:'Grade locked — ENG101 · All students',                  user:'Dr. John Admin',  time:'1 hr ago',   color:'#fbbf24' },
-    { action:'New enrollment — Carlo Ramos → CS Fundamentals',        user:'Dr. John Admin',  time:'2 hr ago',   color:'#2dd4bf' },
-    { action:'Login — Prof. Mark Torres',                              user:'System',          time:'3 hr ago',   color:'#a78bfa' },
-    { action:'Grade updated — Rina Flores · MATH101 · Final: 61',    user:'Prof. Ana Reyes', time:'4 hr ago',   color:'#4f9eff' },
-    { action:'Subject created — Philippine History',                   user:'Dr. John Admin',  time:'Yesterday',  color:'#4ade80' },
-    { action:'Password reset — Ana Lim',                               user:'Dr. John Admin',  time:'Yesterday',  color:'#fb7185' },
-  ],
-};
-
-/* ── SESSION ── */
-let session = {
-  role: 'admin',
-  user: { name:'Dr. John Admin', email:'admin@school.edu', initials:'JA' },
-};
-
-const ROLE_COLORS = { admin:'#a78bfa', teacher:'#4f9eff', student:'#2dd4bf' };
-const ROLE_GRADIENTS = {
-  admin:   'linear-gradient(135deg,#a78bfa,#7c3aed)',
-  teacher: 'linear-gradient(135deg,#4f9eff,#2563eb)',
-  student: 'linear-gradient(135deg,#2dd4bf,#0f766e)',
-};
-
-/* ── NAV DEFINITIONS ── */
-const NAV_CONFIG = {
-  admin: [
-    { label:'OVERVIEW',    items:[{ icon:'🏠', text:'Dashboard',    page:'dashboard'    }] },
-    { label:'MANAGEMENT',  items:[
-      { icon:'👥', text:'Users',       page:'users'       },
-      { icon:'🎓', text:'Students',    page:'students'    },
-      { icon:'📚', text:'Subjects',    page:'subjects'    },
-      { icon:'📅', text:'Semesters',   page:'semesters'   },
-      { icon:'📝', text:'Enrollment',  page:'enrollment'  },
-    ]},
-    { label:'GRADES',      items:[
-      { icon:'📊', text:'Grade Records', page:'grades-admin' },
-      { icon:'📈', text:'Reports',        page:'reports'      },
-    ]},
-    { label:'SYSTEM',      items:[
-      { icon:'🔗', text:'JSON API',  page:'api'     },
-      { icon:'🕵️', text:'Audit Log', page:'audit'   },
-      { icon:'👤', text:'Profile',   page:'profile' },
-    ]},
-  ],
-  teacher: [
-    { label:'TEACHING',  items:[
-      { icon:'📚', text:'My Subjects',    page:'my-subjects'      },
-      { icon:'📊', text:'Manage Grades',  page:'manage-grades'    },
-      { icon:'📈', text:'My Reports',     page:'teacher-reports'  },
-    ]},
-    { label:'ACCOUNT',   items:[
-      { icon:'🔗', text:'JSON API', page:'api'     },
-      { icon:'👤', text:'Profile',  page:'profile' },
-    ]},
-  ],
-  student: [
-    { label:'ACADEMIC', items:[
-      { icon:'🏠', text:'Dashboard', page:'student-dashboard' },
-      { icon:'📋', text:'My Grades', page:'my-grades'         },
-    ]},
-    { label:'ACCOUNT',  items:[
-      { icon:'👤', text:'Profile', page:'profile' }
-    ]},
-  ],
-};
-
-/* ──────────────────────────────────────────────────────────────
-   NAVIGATION
-   ────────────────────────────────────────────────────────────── */
-function buildSidebar() {
-  const sections = NAV_CONFIG[session.role];
-
-  // avatar + user info
-  const av = document.getElementById('user-avatar-sidebar');
-  av.textContent = session.user.initials;
-  av.style.background = ROLE_GRADIENTS[session.role];
-  document.getElementById('sidebar-name').textContent = session.user.name;
-  document.getElementById('sidebar-role').textContent =
-    session.role.charAt(0).toUpperCase() + session.role.slice(1);
-
-  // nav links
-  let html = '';
-  sections.forEach(s => {
-    html += `<div class="sidebar-section">
-      <div class="sidebar-label">${s.label}</div>`;
-    s.items.forEach(item => {
-      html += `<div class="nav-item" data-page="${item.page}"
-        onclick="showPage('${item.page}')">
-        <span class="nav-icon">${item.icon}</span>${item.text}
-      </div>`;
-    });
-    html += '</div>';
-  });
-  document.getElementById('nav-container').innerHTML = html;
-}
-
-function showPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-
-  const el = document.getElementById('page-' + page);
-  if (el) {
-    el.classList.add('active');
-    // call page-specific renderer
-    const renderers = {
-      'dashboard':        renderDashboard,
-      'users':            renderUsers,
-      'students':         renderStudents,
-      'subjects':         renderSubjects,
-      'enrollment':       renderEnrollment,
-      'grades-admin':     renderGradesAdmin,
-      'audit':            renderAudit,
-      'my-subjects':      renderTeacherSubjects,
-      'manage-grades':    renderGradeEntry,
-      'student-dashboard':renderStudentDash,
-      'my-grades':        renderMyGrades,
-      'reports':          renderReports,
-      'teacher-reports':  renderTeacherChart,
-      'profile':          renderProfile,
-    };
-    if (renderers[page]) renderers[page]();
-  }
-
-  // highlight active nav item
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const active = document.querySelector(`.nav-item[data-page="${page}"]`);
-  if (active) active.classList.add('active');
-}
-
-/* ──────────────────────────────────────────────────────────────
-   DASHBOARD (Admin)
-   ────────────────────────────────────────────────────────────── */
-function renderDashboard() {
-  const h = new Date().getHours();
-  const greetWord = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
-  document.getElementById('dashboard-greeting').textContent =
-    greetWord + ', ' + session.user.name.split(' ')[0] + ' 👋';
-
-  document.getElementById('dashboard-stats').innerHTML = `
-    <div class="stat-card blue">  <div class="stat-label">Total Students</div><div class="stat-value">248</div><div class="stat-sub">↑ 12 this month</div>  <div class="stat-icon">🎓</div></div>
-    <div class="stat-card purple"><div class="stat-label">Teachers</div>       <div class="stat-value">18</div> <div class="stat-sub">Across 6 departments</div><div class="stat-icon">👩‍🏫</div></div>
-    <div class="stat-card teal">  <div class="stat-label">Subjects</div>       <div class="stat-value">32</div> <div class="stat-sub">Active this semester</div><div class="stat-icon">📚</div></div>
-    <div class="stat-card green"> <div class="stat-label">Pass Rate</div>      <div class="stat-value">82%</div><div class="stat-sub">↑ 4% from last sem</div> <div class="stat-icon">✅</div></div>
-    <div class="stat-card amber"> <div class="stat-label">Grades Pending</div> <div class="stat-value">47</div> <div class="stat-sub">Awaiting submission</div><div class="stat-icon">⏳</div></div>
-    <div class="stat-card rose">  <div class="stat-label">At Risk</div>        <div class="stat-value">12</div> <div class="stat-sub">Below passing grade</div><div class="stat-icon">⚠️</div></div>
-  `;
-  renderGradeChart('grade-chart');
-  renderAtRisk();
-  renderAuditItems('recent-audit', DATA.audit.slice(0, 4));
-}
-
-function renderGradeChart(containerId) {
-  const bars = [
-    { lbl:'MATH101', total:35, col:'#4f9eff' },
-    { lbl:'PHY201',  total:28, col:'#a78bfa' },
-    { lbl:'ENG101',  total:40, col:'#2dd4bf' },
-    { lbl:'CS101',   total:33, col:'#fbbf24' },
-    { lbl:'HIST101', total:45, col:'#4ade80' },
-  ];
-  const max = 50;
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  el.innerHTML = bars.map(b => {
-    const h = Math.round((b.total / max) * 120);
-    return `<div class="chart-bar-col">
-      <div class="chart-bar" style="background:${b.col};height:${h}px;opacity:0.85">
-        <span>${b.total}</span>
-      </div>
-      <div class="chart-lbl">${b.lbl}</div>
-    </div>`;
-  }).join('');
-}
-
-function renderAtRisk() {
-  const list = [
-    { name:'Juan Dela Cruz', subject:'Physics 201',     grade:70 },
-    { name:'Rina Flores',    subject:'Mathematics 101', grade:61 },
-    { name:'Cris Manalo',    subject:'CS Fundamentals', grade:68 },
-    { name:'Beth Cruz',      subject:'Physics 201',     grade:72 },
-  ];
-  const el = document.getElementById('at-risk-list');
-  if (!el) return;
-  el.innerHTML = list.map(s => `
-    <div style="padding:12px 24px;display:flex;align-items:center;justify-content:space-between;
-      border-bottom:1px solid rgba(255,255,255,0.04)">
-      <div>
-        <div style="font-size:13.5px;font-weight:500;color:var(--text-primary)">${s.name}</div>
-        <div style="font-size:12px;color:var(--text-muted)">${s.subject}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:16px;font-weight:700;color:var(--accent-rose)">${s.grade}</div>
-        <div style="font-size:10px;color:var(--text-muted)">Final Grade</div>
-      </div>
-    </div>`).join('');
-}
-
-function renderAuditItems(containerId, items) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  el.innerHTML = items.map(a => `
-    <div class="log-item">
-      <div class="log-dot" style="background:${a.color}"></div>
-      <div class="log-content">
-        <div class="log-action">${a.action}</div>
-        <div class="log-meta">${a.user} · ${a.time}</div>
-      </div>
-    </div>`).join('');
-}
-
-/* ──────────────────────────────────────────────────────────────
-   ADMIN TABLES
-   ────────────────────────────────────────────────────────────── */
-function renderUsers() {
-  document.getElementById('users-tbody').innerHTML = DATA.users.map(u => `
-    <tr>
-      <td>${u.name}</td>
-      <td class="text-secondary font-mono fs-13">${u.email}</td>
-      <td><span class="badge badge-${u.role.toLowerCase()}">${u.role}</span></td>
-      <td><span class="badge badge-${u.status.toLowerCase()}">${u.status}</span></td>
-      <td class="text-muted">${u.created}</td>
-      <td>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-glass btn-sm btn-icon" onclick="showToast('Edit user — connect to PHP','info')">✏️</button>
-          <button class="btn btn-rose  btn-sm btn-icon" onclick="showToast('Delete user — connect to PHP','error')">🗑</button>
-        </div>
-      </td>
-    </tr>`).join('');
-}
-
-function renderStudents() {
-  document.getElementById('students-tbody').innerHTML = DATA.students.map(s => `
-    <tr>
-      <td class="font-mono fs-13">${s.num}</td>
-      <td>${s.name}</td>
-      <td><span class="badge badge-student">${s.course}</span></td>
-      <td class="text-secondary">${s.year}</td>
-      <td class="text-muted">${s.section}</td>
-      <td>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-glass btn-sm btn-icon" onclick="showToast('Edit student — connect to PHP','info')">✏️</button>
-          <button class="btn btn-rose  btn-sm btn-icon" onclick="showToast('Delete student — connect to PHP','error')">🗑</button>
-        </div>
-      </td>
-    </tr>`).join('');
-}
-
-function renderSubjects() {
-  document.getElementById('subjects-tbody').innerHTML = DATA.subjects.map(s => `
-    <tr>
-      <td class="font-mono text-accent-teal fs-13">${s.code}</td>
-      <td>${s.name}</td>
-      <td class="text-secondary">${s.units} units</td>
-      <td class="text-secondary">${s.teacher}</td>
-      <td><span class="badge badge-active">${s.enrolled}</span></td>
-      <td>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-glass btn-sm btn-icon" onclick="showToast('Edit subject — connect to PHP','info')">✏️</button>
-          <button class="btn btn-rose  btn-sm btn-icon" onclick="showToast('Delete subject — connect to PHP','error')">🗑</button>
-        </div>
-      </td>
-    </tr>`).join('');
-}
-
-function renderEnrollment() {
-  document.getElementById('enroll-tbody').innerHTML = DATA.enrollments.map(e => `
-    <tr>
-      <td>${e.student}</td>
-      <td class="text-secondary">${e.subject}</td>
-      <td class="text-muted">${e.sem}</td>
-      <td><span class="badge badge-active">${e.status}</span></td>
-      <td>
-        <button class="btn btn-rose btn-sm"
-          onclick="showToast('Unenrolled — connect to PHP','error')">Remove</button>
-      </td>
-    </tr>`).join('');
-}
-
-function renderGradesAdmin() {
-  document.getElementById('grades-admin-tbody').innerHTML = DATA.gradesAdmin.map(g => `
-    <tr>
-      <td>${g.student}</td>
-      <td class="text-secondary">${g.subject}</td>
-      <td class="text-secondary">${g.mid  ?? '—'}</td>
-      <td class="text-secondary">${g.fin  ?? '—'}</td>
-      <td class="${g.final ? 'text-accent-blue fw-600' : 'text-muted'}">${g.final ?? '—'}</td>
-      <td><span class="badge badge-${g.remarks.toLowerCase()}">${g.remarks}</span></td>
-      <td>${g.locked
-        ? '<span class="badge badge-locked">🔒 Locked</span>'
-        : '<button class="btn btn-glass btn-sm" onclick="showToast(\'Grade locked\',\'info\')">Lock</button>'
-      }</td>
-    </tr>`).join('');
-}
-
-function renderAudit() {
-  renderAuditItems('audit-list', DATA.audit);
-}
-
-/* ──────────────────────────────────────────────────────────────
-   TEACHER PAGES
-   ────────────────────────────────────────────────────────────── */
-function renderTeacherSubjects() {
-  const mySubjects = [
-    { code:'MATH101', name:'Mathematics 101', units:3, students:35, graded:28, color:'#4f9eff' },
-    { code:'CS101',   name:'CS Fundamentals', units:3, students:33, graded:30, color:'#a78bfa' },
-  ];
-  document.getElementById('teacher-subjects-grid').innerHTML = mySubjects.map(s => {
-    const pct = Math.round((s.graded / s.students) * 100);
-    return `<div class="glass-card" style="padding:24px;cursor:pointer"
-        onclick="openSubjectGrades('${s.code}','${s.name}')">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div style="font-size:22px;font-weight:700;font-family:var(--font-mono);color:${s.color}">${s.code}</div>
-        <span class="badge badge-active">${s.units} units</span>
-      </div>
-      <div style="font-size:15px;font-weight:600;margin-bottom:4px">${s.name}</div>
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">1st Semester · AY 2024–2025</div>
-      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px">Grade Entry Progress</div>
-      <div class="grade-bar">
-        <div class="grade-fill" style="width:${pct}%;background:${s.color}"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--text-muted)">
-        <span>${s.graded} graded</span><span>${s.students} total</span>
-      </div>
-      <button class="btn btn-glass w-full" style="margin-top:16px;justify-content:center">
-        Open Grade Sheet →
-      </button>
-    </div>`;
-  }).join('');
-}
-
-function openSubjectGrades(code, name) {
-  document.getElementById('manage-grades-title').textContent = 'Grades — ' + name;
-  document.getElementById('manage-grades-sub').textContent =
-    code + ' · 1st Semester · AY 2024–2025';
-  showPage('manage-grades');
-}
-
-function renderGradeEntry() {
-  document.getElementById('grade-entry-tbody').innerHTML = DATA.gradeEntry.map((s, i) => {
-    const mid   = s.mid  ?? '';
-    const fin   = s.fin  ?? '';
-    const final = (s.mid != null && s.fin != null)
-      ? ((s.mid * 0.5) + (s.fin * 0.5)).toFixed(1) : null;
-    const rem   = final != null ? (parseFloat(final) >= 75 ? 'Passed' : 'Failed') : 'Incomplete';
-    const remCls= rem === 'Passed' ? 'badge-passed' : rem === 'Failed' ? 'badge-failed' : 'badge-incomplete';
-    const gCol  = final != null
-      ? (parseFloat(final) >= 75 ? 'var(--accent-green)' : 'var(--accent-rose)')
-      : 'var(--accent-amber)';
-    return `<tr>
-      <td class="font-mono fs-13">${s.num}</td>
-      <td>${s.name}</td>
-      <td><input class="form-input" style="width:70px;padding:6px 10px;font-size:13px"
-          type="number" min="0" max="100" value="${mid}" placeholder="0–100"
-          onchange="recalcRow(this,${i})"></td>
-      <td><input class="form-input" style="width:70px;padding:6px 10px;font-size:13px"
-          type="number" min="0" max="100" value="${fin}" placeholder="0–100"
-          onchange="recalcRow(this,${i})"></td>
-      <td id="fg-${i}" class="fw-600" style="color:${gCol}">${final ?? '—'}</td>
-      <td id="rem-${i}"><span class="badge ${remCls}">${rem}</span></td>
-      <td id="bar-${i}">
-        ${final != null
-          ? `<div class="grade-bar" style="width:80px">
-               <div class="grade-fill" style="width:${Math.min(parseFloat(final),100)}%;background:${gCol}"></div>
-             </div>` : ''}
-      </td>
-    </tr>`;
-  }).join('');
-}
-
-function recalcRow(input, idx) {
-  const row    = input.closest('tr');
-  const inputs = row.querySelectorAll('input[type=number]');
-  const mid    = parseFloat(inputs[0].value);
-  const fin    = parseFloat(inputs[1].value);
-  const fgCell  = document.getElementById('fg-'  + idx);
-  const remCell = document.getElementById('rem-' + idx);
-  const barCell = document.getElementById('bar-' + idx);
-
-  if (!isNaN(mid) && !isNaN(fin)) {
-    const fg     = ((mid * 0.5) + (fin * 0.5)).toFixed(1);
-    const passed = parseFloat(fg) >= 75;
-    const col    = passed ? 'var(--accent-green)' : 'var(--accent-rose)';
-    fgCell.textContent  = fg;
-    fgCell.style.color  = col;
-    remCell.innerHTML   = `<span class="badge ${passed ? 'badge-passed' : 'badge-failed'}">${passed ? 'Passed' : 'Failed'}</span>`;
-    barCell.innerHTML   = `<div class="grade-bar" style="width:80px">
-      <div class="grade-fill" style="width:${Math.min(parseFloat(fg),100)}%;background:${col}"></div>
-    </div>`;
-  } else {
-    fgCell.textContent  = '—';
-    fgCell.style.color  = 'var(--text-muted)';
-    remCell.innerHTML   = '<span class="badge badge-incomplete">Incomplete</span>';
-    barCell.innerHTML   = '';
-  }
-}
-
-function saveAllGrades() { showToast('All grades saved successfully!', 'success'); }
-function lockAllGrades()  { showToast('All grades locked. No further edits allowed.', 'info'); }
-
-/* ──────────────────────────────────────────────────────────────
-   STUDENT PAGES
-   ────────────────────────────────────────────────────────────── */
-function renderStudentDash() {
-  document.getElementById('student-welcome').textContent =
-    'Welcome back, ' + session.user.name.split(' ')[0] + ' 👋';
-
-  document.getElementById('student-grades-preview').innerHTML =
-    DATA.studentGrades.map(g => {
-      const remCls = g.status === 'Passed' ? 'badge-passed'
-                   : g.status === 'Failed' ? 'badge-failed' : 'badge-incomplete';
-      return `<tr>
-        <td>${g.subject}</td>
-        <td class="text-muted">${g.units}</td>
-        <td class="text-secondary">${g.mid  ?? '—'}</td>
-        <td class="text-secondary">${g.fin  ?? '—'}</td>
-        <td class="${g.final ? 'text-accent-blue fw-600' : 'text-muted'}">${g.final ?? '—'}</td>
-        <td><span class="badge ${remCls}">${g.status}</span></td>
-      </tr>`;
-    }).join('');
-}
-
-function renderMyGrades() {
-  document.getElementById('my-grades-tbody').innerHTML =
-    DATA.studentGrades.map(g => {
-      const remCls = g.status === 'Passed' ? 'badge-passed'
-                   : g.status === 'Failed' ? 'badge-failed' : 'badge-incomplete';
-      return `<tr>
-        <td>${g.subject}</td>
-        <td class="text-muted">${g.units}</td>
-        <td class="text-secondary">${g.mid  ?? '—'}</td>
-        <td class="text-secondary">${g.fin  ?? '—'}</td>
-        <td class="${g.final ? 'text-accent-blue fw-600' : 'text-muted'}">${g.final ?? '—'}</td>
-        <td><span class="badge ${remCls}">${g.status}</span></td>
-      </tr>`;
-    }).join('');
-}
-
-/* ──────────────────────────────────────────────────────────────
-   REPORTS
-   ────────────────────────────────────────────────────────────── */
-function renderReports() {
-  const bars = [
-    { lbl:'MATH101', pass:28, fail:5  },
-    { lbl:'PHY201',  pass:19, fail:7  },
-    { lbl:'ENG101',  pass:36, fail:2  },
-    { lbl:'CS101',   pass:25, fail:6  },
-  ];
-  const max = 40;
-  const el = document.getElementById('reports-chart');
-  if (el) {
-    el.innerHTML = bars.map(b => {
-      const hp = Math.round((b.pass / max) * 160);
-      const hf = Math.round((b.fail / max) * 160);
-      return `<div class="chart-bar-col">
-        <div style="display:flex;gap:3px;align-items:flex-end">
-          <div class="chart-bar" style="background:#4ade80;opacity:0.8;height:${hp}px;flex:1;border-radius:4px 4px 0 0"><span>${b.pass}</span></div>
-          <div class="chart-bar" style="background:#fb7185;opacity:0.8;height:${hf}px;flex:1;border-radius:4px 4px 0 0"><span>${b.fail}</span></div>
-        </div>
-        <div class="chart-lbl">${b.lbl}</div>
-      </div>`;
-    }).join('');
-  }
-
-  const gpa = document.getElementById('gpa-dist');
-  if (gpa) {
-    gpa.innerHTML = [
-      { range:"Dean's List (GPA ≤ 1.75)", count:23,  color:'#a78bfa', pct:30 },
-      { range:"Good Standing (≤ 2.50)",   count:140, color:'#4ade80', pct:70 },
-      { range:"At Risk (> 2.50)",         count:72,  color:'#fbbf24', pct:40 },
-      { range:"Failed",                    count:13,  color:'#fb7185', pct:15 },
-    ].map(d => `
-      <div style="margin-bottom:14px">
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-          <span style="font-size:12px;color:var(--text-secondary)">${d.range}</span>
-          <span style="font-size:12px;font-weight:600;color:${d.color}">${d.count}</span>
-        </div>
-        <div class="grade-bar">
-          <div class="grade-fill" style="width:${d.pct}%;background:${d.color}"></div>
-        </div>
-      </div>`).join('');
-  }
-}
-
-function renderTeacherChart() {
-  const bars = [
-    { lbl:'90–100', count:8,  col:'#4ade80' },
-    { lbl:'80–89',  count:14, col:'#4f9eff' },
-    { lbl:'75–79',  count:10, col:'#fbbf24' },
-    { lbl:'65–74',  count:5,  col:'#fb7185' },
-    { lbl:'<65',    count:2,  col:'#f87171' },
-  ];
-  const max = 14;
-  const el = document.getElementById('teacher-chart');
-  if (!el) return;
-  el.innerHTML = bars.map(b => {
-    const h = Math.round((b.count / max) * 140);
-    return `<div class="chart-bar-col">
-      <div class="chart-bar" style="background:${b.col};opacity:0.8;height:${h}px">
-        <span>${b.count}</span>
-      </div>
-      <div class="chart-lbl">${b.lbl}</div>
-    </div>`;
-  }).join('');
-}
-
-/* ──────────────────────────────────────────────────────────────
-   PROFILE
-   ────────────────────────────────────────────────────────────── */
-function renderProfile() {
-  const av = document.getElementById('profile-avatar-display');
-  if (av) { av.textContent = session.user.initials; av.style.background = ROLE_GRADIENTS[session.role]; }
-  setText('profile-fullname',    session.user.name);
-  setText('profile-role-display', session.role.charAt(0).toUpperCase() + session.role.slice(1));
-  setText('profile-email-display', session.user.email);
-  const parts = session.user.name.split(' ');
-  setVal('prof-first', parts[0]);
-  setVal('prof-last',  parts[parts.length - 1]);
-  setVal('prof-email', session.user.email);
-}
-
-function saveProfile() { showToast('Profile updated successfully', 'success'); }
-
-/* ──────────────────────────────────────────────────────────────
-   API DEMO
-   ────────────────────────────────────────────────────────────── */
-function runApiDemo() {
-  document.getElementById('api-response').innerHTML =
-    '<span style="color:var(--text-muted)">⏳ Sending request...</span>';
-
-  setTimeout(() => {
-    const resp = {
-      status: 200,
-      message: "OK",
-      student: { id:5, name:"Maria Santos", student_number:"2024-0001", course:"BSCS", year_level:"2nd Year" },
-      semester: "1st Semester AY 2024–2025",
-      grades: DATA.studentGrades.map(g => ({
-        subject:     g.subject,
-        units:       g.units,
-        midterm:     g.mid,
-        finals:      g.fin,
-        final_grade: g.final,
-        remarks:     g.status,
-      })),
-      gpa: 1.68,
-      standing: "Dean's List",
-    };
-    document.getElementById('api-response').innerHTML = syntaxHighlight(JSON.stringify(resp, null, 2));
-  }, 600);
-}
-
-function syntaxHighlight(json) {
-  return json.replace(
-    /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-    m => {
-      let cls = 'color:#f9a8d4';
-      if (/^"/.test(m))      cls = /:$/.test(m) ? 'color:#93c5fd' : 'color:#86efac';
-      else if (/true|false/.test(m)) cls = 'color:#fde68a';
-      else if (/null/.test(m))       cls = 'color:#94a3b8';
-      else                           cls = 'color:#c4b5fd';
-      return `<span style="${cls}">${m}</span>`;
-    }
-  );
-}
-
-/* ──────────────────────────────────────────────────────────────
-   ENROLLMENT — CLASS LIST
-   ────────────────────────────────────────────────────────────── */
-function loadClassList(val) {
-  const el = document.getElementById('class-list-content');
-  if (!val) {
-    el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted)">Select a subject above to view its class list</div>';
-    return;
-  }
-  el.innerHTML = `<table>
-    <thead><tr><th>Student No.</th><th>Name</th><th>Course</th><th>Year</th></tr></thead>
-    <tbody>${DATA.students.slice(0, 4).map(s =>
-      `<tr>
-        <td class="font-mono fs-13">${s.num}</td>
-        <td>${s.name}</td>
-        <td>${s.course}</td>
-        <td>${s.year}</td>
-      </tr>`
-    ).join('')}</tbody>
-  </table>`;
-}
-
-/* ──────────────────────────────────────────────────────────────
-   MODAL HELPERS
-   ────────────────────────────────────────────────────────────── */
-function showModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-function closeSaveModal(id, msg) {
-  closeModal(id);
-  showToast(msg, 'success');
-}
-
-// close on backdrop click
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.modal-overlay').forEach(o => {
-    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
-  });
-  // close on Escape
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape')
-      document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
-  });
+/* ══════════════════════════════════════════════════════════════
+   1. DOM READY — BOOT
+══════════════════════════════════════════════════════════════ */
+document.addEventListener("DOMContentLoaded", () => {
+  App.init();
 });
 
-/* ──────────────────────────────────────────────────────────────
-   TABLE FILTER / SEARCH
-   ────────────────────────────────────────────────────────────── */
-function filterTable(input, tableId) {
-  const q = input.value.toLowerCase();
-  document.querySelectorAll(`#${tableId} tbody tr`).forEach(r => {
-    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
-  });
-}
+/* ══════════════════════════════════════════════════════════════
+   2. CORE APP CONTROLLER
+══════════════════════════════════════════════════════════════ */
+const App = {
+  // ── State ──────────────────────────────────────────────────
+  state: {
+    sidebarCollapsed: false,
+    mobileSidebarOpen: false,
+    activeDropdown: null,
+  },
 
-function filterTableByRole(sel, tableId) {
-  const q = sel.value.toLowerCase();
-  document.querySelectorAll(`#${tableId} tbody tr`).forEach(r => {
-    r.style.display = !q || r.textContent.toLowerCase().includes(q) ? '' : 'none';
-  });
-}
+  // ── Boot ───────────────────────────────────────────────────
+  init() {
+    Sidebar.init();
+    Topbar.init();
+    Modal.init();
+    Toast.init();
+    Dropdown.init();
+    Tabs.init();
+    Table.init();
+    Tooltip.init();
+    GradeUI.init();
+    Charts.init();
+    this.initMobileOverlay();
+    this.initPageAnimations();
+    this.restoreSidebarState();
+  },
 
-function filterAudit(input) {
-  const q = input.value.toLowerCase();
-  document.querySelectorAll('#audit-list .log-item').forEach(item => {
-    item.style.display = item.textContent.toLowerCase().includes(q) ? '' : 'none';
-  });
-}
+  // ── Mobile Overlay ──────────────────────────────────────────
+  initMobileOverlay() {
+    let overlay = document.querySelector(".mobile-overlay");
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.className = "mobile-overlay";
+      document.body.appendChild(overlay);
+    }
 
-/* ──────────────────────────────────────────────────────────────
-   TABS
-   ────────────────────────────────────────────────────────────── */
-function switchTab(btn, targetId) {
-  const parent = btn.closest('.tabs');
-  parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  // hide all sibling panels (direct siblings of .tabs)
-  let sibling = parent.nextElementSibling;
-  while (sibling) { sibling.style.display = 'none'; sibling = sibling.nextElementSibling; }
-  document.getElementById(targetId).style.display = '';
-}
+    overlay.addEventListener("click", () => {
+      Sidebar.closeMobile();
+    });
+  },
 
-/* ──────────────────────────────────────────────────────────────
-   TOAST
-   ────────────────────────────────────────────────────────────── */
-let _toastTimer;
-function showToast(msg, type = 'info') {
-  const icons = { success:'✅', error:'❌', info:'ℹ️' };
-  const t = document.getElementById('toast');
-  t.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> ${msg}`;
-  t.className = `toast ${type} show`;
-  clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
-}
+  // ── Page Animations ─────────────────────────────────────────
+  initPageAnimations() {
+    // Stagger stat cards
+    const statCards = document.querySelectorAll(".stat-card");
+    statCards.forEach((card, i) => {
+      card.style.opacity = "0";
+      card.style.transform = "translateY(16px)";
+      setTimeout(
+        () => {
+          card.style.transition = "all 0.40s ease";
+          card.style.opacity = "1";
+          card.style.transform = "translateY(0)";
+        },
+        i * 80 + 100,
+      );
+    });
 
-/* ──────────────────────────────────────────────────────────────
-   CRUD ACTION STUBS (wire to PHP fetch calls)
-   ────────────────────────────────────────────────────────────── */
-function addUser() {
-  closeModal('modal-add-user');
-  showToast('User account created successfully', 'success');
-  renderUsers();
-}
-function addStudent() {
-  closeModal('modal-add-student');
-  showToast('Student record added successfully', 'success');
-  renderStudents();
-}
-function addSubject() {
-  closeModal('modal-add-subject');
-  showToast('Subject created and teacher assigned', 'success');
-  renderSubjects();
-}
-function enrollStudent() {
-  closeModal('modal-enroll');
-  showToast('Student enrolled successfully', 'success');
-  renderEnrollment();
-}
+    // Stagger glass cards
+    const glassCards = document.querySelectorAll(".glass-card");
+    glassCards.forEach((card, i) => {
+      card.style.opacity = "0";
+      card.style.transform = "translateY(12px)";
+      setTimeout(
+        () => {
+          card.style.transition = "all 0.40s ease";
+          card.style.opacity = "1";
+          card.style.transform = "translateY(0)";
+        },
+        i * 60 + 150,
+      );
+    });
+  },
 
-/* ──────────────────────────────────────────────────────────────
-   UTILS
-   ────────────────────────────────────────────────────────────── */
-function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
-function setVal(id, val)  { const el = document.getElementById(id); if (el) el.value = val; }
+  // ── Restore Sidebar State ───────────────────────────────────
+  restoreSidebarState() {
+    const collapsed = localStorage.getItem("sgms_sidebar_collapsed") === "true";
+    if (collapsed) {
+      Sidebar.collapse(false); // no animation on initial load
+    }
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   3. SIDEBAR MODULE
+══════════════════════════════════════════════════════════════ */
+const Sidebar = {
+  el: null,
+  toggleBtn: null,
+  mainContent: null,
+  topbar: null,
+
+  init() {
+    this.el = document.querySelector(".sidebar");
+    this.toggleBtn = document.querySelector(".sidebar-toggle");
+    this.mainContent = document.querySelector(".main-content");
+    this.topbar = document.querySelector(".topbar");
+
+    if (!this.el) return;
+
+    this.bindToggle();
+    this.bindMobileMenu();
+    this.setActiveNavItem();
+  },
+
+  // ── Desktop Toggle ──────────────────────────────────────────
+  bindToggle() {
+    if (!this.toggleBtn) return;
+
+    this.toggleBtn.addEventListener("click", () => {
+      const isCollapsed = this.el.classList.contains("collapsed");
+      isCollapsed ? this.expand() : this.collapse();
+    });
+  },
+
+  collapse(animate = true) {
+    if (!this.el) return;
+
+    if (!animate) {
+      this.el.style.transition = "none";
+      if (this.mainContent) this.mainContent.style.transition = "none";
+      if (this.topbar) this.topbar.style.transition = "none";
+    }
+
+    this.el.classList.add("collapsed");
+    if (this.mainContent) this.mainContent.classList.add("sidebar-collapsed");
+    if (this.topbar) this.topbar.classList.add("sidebar-collapsed");
+    if (this.toggleBtn) {
+      this.toggleBtn.classList.add("collapsed");
+      this.toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+    }
+
+    localStorage.setItem("sgms_sidebar_collapsed", "true");
+    App.state.sidebarCollapsed = true;
+
+    if (!animate) {
+      requestAnimationFrame(() => {
+        this.el.style.transition = "";
+        if (this.mainContent) this.mainContent.style.transition = "";
+        if (this.topbar) this.topbar.style.transition = "";
+      });
+    }
+  },
+
+  expand() {
+    if (!this.el) return;
+
+    this.el.classList.remove("collapsed");
+    if (this.mainContent)
+      this.mainContent.classList.remove("sidebar-collapsed");
+    if (this.topbar) this.topbar.classList.remove("sidebar-collapsed");
+    if (this.toggleBtn) {
+      this.toggleBtn.classList.remove("collapsed");
+      this.toggleBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+    }
+
+    localStorage.setItem("sgms_sidebar_collapsed", "false");
+    App.state.sidebarCollapsed = false;
+  },
+
+  // ── Mobile Toggle ───────────────────────────────────────────
+  bindMobileMenu() {
+    const mobileBtn = document.querySelector(".topbar-mobile-menu");
+    if (!mobileBtn) return;
+
+    mobileBtn.addEventListener("click", () => {
+      App.state.mobileSidebarOpen ? this.closeMobile() : this.openMobile();
+    });
+  },
+
+  openMobile() {
+    if (!this.el) return;
+    this.el.classList.add("mobile-open");
+    document.querySelector(".mobile-overlay")?.classList.add("active");
+    document.body.style.overflow = "hidden";
+    App.state.mobileSidebarOpen = true;
+  },
+
+  closeMobile() {
+    if (!this.el) return;
+    this.el.classList.remove("mobile-open");
+    document.querySelector(".mobile-overlay")?.classList.remove("active");
+    document.body.style.overflow = "";
+    App.state.mobileSidebarOpen = false;
+  },
+
+  // ── Active Nav Item ─────────────────────────────────────────
+  setActiveNavItem() {
+    const currentPath = window.location.pathname;
+    const currentFile = currentPath.split("/").pop() || "index.php";
+
+    const navItems = document.querySelectorAll(".nav-item");
+    navItems.forEach((item) => {
+      const href = item.getAttribute("href") || "";
+      const itemFile = href.split("/").pop();
+
+      if (itemFile && itemFile === currentFile) {
+        item.classList.add("active");
+      } else if (
+        href &&
+        currentPath.includes(href.replace("../", "").replace(".php", ""))
+      ) {
+        item.classList.add("active");
+      }
+    });
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   4. TOPBAR MODULE
+══════════════════════════════════════════════════════════════ */
+const Topbar = {
+  init() {
+    this.bindNotifications();
+    this.bindUserMenu();
+  },
+
+  bindNotifications() {
+    const notifBtn = document.getElementById("notif-btn");
+    if (!notifBtn) return;
+
+    notifBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      // Notification panel toggle can be extended
+    });
+  },
+
+  bindUserMenu() {
+    const userBtn = document.getElementById("user-menu-btn");
+    const userMenu = document.getElementById("user-dropdown");
+    if (!userBtn || !userMenu) return;
+
+    userBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      userMenu.classList.toggle("open");
+    });
+
+    document.addEventListener("click", () => {
+      userMenu.classList.remove("open");
+    });
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   5. MODAL MODULE
+══════════════════════════════════════════════════════════════ */
+const Modal = {
+  activeModal: null,
+
+  init() {
+    // Close on overlay click
+    document.addEventListener("click", (e) => {
+      if (e.target.classList.contains("modal-overlay")) {
+        this.close(e.target);
+      }
+    });
+
+    // Close on Escape
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && this.activeModal) {
+        this.close(this.activeModal);
+      }
+    });
+
+    // Bind all open triggers
+    document.querySelectorAll("[data-modal-open]").forEach((trigger) => {
+      trigger.addEventListener("click", () => {
+        const id = trigger.dataset.modalOpen;
+        this.open(id);
+      });
+    });
+
+    // Bind all close triggers
+    document
+      .querySelectorAll("[data-modal-close], .modal-close")
+      .forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const overlay = btn.closest(".modal-overlay");
+          if (overlay) this.close(overlay);
+        });
+      });
+  },
+
+  // ── Open ────────────────────────────────────────────────────
+  open(idOrElement, options = {}) {
+    let overlay;
+
+    if (typeof idOrElement === "string") {
+      overlay = document.getElementById(idOrElement);
+    } else {
+      overlay = idOrElement;
+    }
+
+    if (!overlay) return;
+
+    overlay.classList.add("active");
+    document.body.style.overflow = "hidden";
+    this.activeModal = overlay;
+
+    // Focus first input
+    setTimeout(() => {
+      const firstInput = overlay.querySelector(
+        "input:not([type=hidden]), textarea, select",
+      );
+      if (firstInput) firstInput.focus();
+    }, 300);
+
+    // onOpen callback
+    if (typeof options.onOpen === "function") {
+      options.onOpen(overlay);
+    }
+  },
+
+  // ── Close ────────────────────────────────────────────────────
+  close(overlay) {
+    if (!overlay) return;
+
+    overlay.classList.remove("active");
+    document.body.style.overflow = "";
+
+    if (this.activeModal === overlay) {
+      this.activeModal = null;
+    }
+
+    // Clear forms inside modal
+    const forms = overlay.querySelectorAll("form");
+    forms.forEach((form) => {
+      if (form.dataset.clearOnClose !== "false") {
+        // Don't reset — let PHP handle repopulation
+      }
+    });
+  },
+
+  // ── Confirm Dialog ───────────────────────────────────────────
+  confirm(options = {}) {
+    const {
+      title = "Are you sure?",
+      message = "This action cannot be undone.",
+      confirm = "Confirm",
+      cancel = "Cancel",
+      type = "danger",
+      onConfirm,
+      onCancel,
+    } = options;
+
+    // Remove existing confirm modal
+    document.getElementById("confirm-modal")?.remove();
+
+    const iconMap = { danger: "⚠️", warning: "⚠️", info: "ℹ️", success: "✅" };
+
+    const html = `
+      <div class="modal-overlay" id="confirm-modal">
+        <div class="modal modal-sm">
+          <div class="modal-header">
+            <div class="modal-title">
+              <div class="modal-icon" style="background: var(--${type}-bg); color: var(--${type})">
+                ${iconMap[type] || "⚠️"}
+              </div>
+              ${title}
+            </div>
+          </div>
+          <div class="modal-body">
+            <p style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
+              ${message}
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" id="confirm-cancel-btn">${cancel}</button>
+            <button class="btn btn-${type}" id="confirm-ok-btn">${confirm}</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML("beforeend", html);
+
+    const modal = document.getElementById("confirm-modal");
+    const confirmBtn = document.getElementById("confirm-ok-btn");
+    const cancelBtn = document.getElementById("confirm-cancel-btn");
+
+    setTimeout(() => this.open(modal), 10);
+
+    confirmBtn.addEventListener("click", () => {
+      this.close(modal);
+      modal.remove();
+      if (typeof onConfirm === "function") onConfirm();
+    });
+
+    cancelBtn.addEventListener("click", () => {
+      this.close(modal);
+      modal.remove();
+      if (typeof onCancel === "function") onCancel();
+    });
+
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        this.close(modal);
+        modal.remove();
+        if (typeof onCancel === "function") onCancel();
+      }
+    });
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   6. TOAST MODULE
+══════════════════════════════════════════════════════════════ */
+const Toast = {
+  container: null,
+  queue: [],
+  MAX: 5,
+  DURATION: 4500,
+
+  init() {
+    this.container = document.querySelector(".toast-container");
+    if (!this.container) {
+      this.container = document.createElement("div");
+      this.container.className = "toast-container";
+      document.body.appendChild(this.container);
+    }
+
+    // Auto-show PHP flash messages
+    this.showFlashMessages();
+  },
+
+  show(options = {}) {
+    const {
+      type = "info",
+      title = "",
+      message = "",
+      duration = this.DURATION,
+    } = typeof options === "string"
+      ? { type: "info", message: options }
+      : options;
+
+    // Limit max toasts
+    const existing = this.container.querySelectorAll(".toast");
+    if (existing.length >= this.MAX) {
+      this.remove(existing[0]);
+    }
+
+    const iconMap = {
+      success: "fa-check-circle",
+      error: "fa-times-circle",
+      warning: "fa-exclamation-triangle",
+      info: "fa-info-circle",
+    };
+
+    const titleMap = {
+      success: title || "Success",
+      error: title || "Error",
+      warning: title || "Warning",
+      info: title || "Info",
+    };
+
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+      <span class="toast-icon"><i class="fas ${iconMap[type] || iconMap.info}"></i></span>
+      <div class="toast-content">
+        <div class="toast-title">${titleMap[type]}</div>
+        <div class="toast-message">${message}</div>
+      </div>
+      <span class="toast-close"><i class="fas fa-times"></i></span>
+    `;
+
+    this.container.appendChild(toast);
+
+    // Close button
+    toast.querySelector(".toast-close").addEventListener("click", () => {
+      this.remove(toast);
+    });
+
+    // Auto dismiss
+    const timer = setTimeout(() => this.remove(toast), duration);
+
+    // Pause on hover
+    toast.addEventListener("mouseenter", () => clearTimeout(timer));
+    toast.addEventListener("mouseleave", () => {
+      setTimeout(() => this.remove(toast), 1500);
+    });
+
+    return toast;
+  },
+
+  remove(toast) {
+    if (!toast || !toast.parentNode) return;
+    toast.classList.add("removing");
+    setTimeout(() => toast.remove(), 320);
+  },
+
+  // Convenience methods
+  success(message, title = "") {
+    return this.show({ type: "success", message, title });
+  },
+  error(message, title = "") {
+    return this.show({ type: "error", message, title });
+  },
+  warning(message, title = "") {
+    return this.show({ type: "warning", message, title });
+  },
+  info(message, title = "") {
+    return this.show({ type: "info", message, title });
+  },
+
+  // Show PHP-generated flash messages from data attributes
+  showFlashMessages() {
+    const flashEl = document.getElementById("flash-messages");
+    if (!flashEl) return;
+
+    const messages = flashEl.dataset;
+
+    if (messages.success) this.success(messages.success);
+    if (messages.error) this.error(messages.error);
+    if (messages.warning) this.warning(messages.warning);
+    if (messages.info) this.info(messages.info);
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   7. DROPDOWN MODULE
+══════════════════════════════════════════════════════════════ */
+const Dropdown = {
+  init() {
+    document.querySelectorAll(".dropdown").forEach((dropdown) => {
+      const trigger =
+        dropdown.querySelector("[data-dropdown-toggle]") ||
+        dropdown.querySelector(".topbar-btn");
+      const menu = dropdown.querySelector(".dropdown-menu");
+
+      if (!trigger || !menu) return;
+
+      trigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+
+        // Close others
+        document.querySelectorAll(".dropdown-menu.open").forEach((m) => {
+          if (m !== menu) m.classList.remove("open");
+        });
+
+        menu.classList.toggle("open");
+        App.state.activeDropdown = menu.classList.contains("open")
+          ? menu
+          : null;
+      });
+    });
+
+    // Close on outside click
+    document.addEventListener("click", () => {
+      document
+        .querySelectorAll(".dropdown-menu.open")
+        .forEach((m) => m.classList.remove("open"));
+      App.state.activeDropdown = null;
+    });
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   8. TABS MODULE
+══════════════════════════════════════════════════════════════ */
+const Tabs = {
+  init() {
+    document.querySelectorAll(".tabs").forEach((tabGroup) => {
+      const buttons = tabGroup.querySelectorAll(".tab-btn");
+      const contents = document.querySelectorAll(".tab-content");
+
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.tab;
+          if (!target) return;
+
+          // Update buttons
+          buttons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          // Update content panels
+          contents.forEach((panel) => {
+            panel.classList.toggle("active", panel.id === target);
+          });
+
+          // Persist tab selection
+          if (tabGroup.dataset.persist) {
+            localStorage.setItem(
+              `sgms_tab_${tabGroup.dataset.persist}`,
+              target,
+            );
+          }
+        });
+      });
+
+      // Restore persisted tab
+      if (tabGroup.dataset.persist) {
+        const saved = localStorage.getItem(
+          `sgms_tab_${tabGroup.dataset.persist}`,
+        );
+        if (saved) {
+          const savedBtn = tabGroup.querySelector(`[data-tab="${saved}"]`);
+          if (savedBtn) savedBtn.click();
+        }
+      }
+    });
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   9. TABLE MODULE
+══════════════════════════════════════════════════════════════ */
+const Table = {
+  init() {
+    this.initSearch();
+    this.initSort();
+    this.initPerPage();
+    this.initSelectAll();
+  },
+
+  // ── Search Filter ────────────────────────────────────────────
+  initSearch() {
+    document.querySelectorAll("[data-table-search]").forEach((input) => {
+      const tableId = input.dataset.tableSearch;
+      const table = document.getElementById(tableId);
+      if (!table) return;
+
+      let debounceTimer;
+
+      input.addEventListener("input", () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          this.filterTable(table, input.value);
+        }, 250);
+      });
+    });
+  },
+
+  filterTable(table, query) {
+    const rows = table.querySelectorAll("tbody tr");
+    const lowerQ = query.toLowerCase().trim();
+    let visible = 0;
+
+    rows.forEach((row) => {
+      const text = row.textContent.toLowerCase();
+      const matches = !lowerQ || text.includes(lowerQ);
+      row.style.display = matches ? "" : "none";
+      if (matches) visible++;
+    });
+
+    // Update count display
+    const countEl = document.querySelector(`[data-table-count]`);
+    if (countEl) countEl.textContent = visible;
+
+    // Show empty state
+    const emptyEl = table
+      .closest(".table-wrapper")
+      ?.querySelector(".table-empty");
+    if (emptyEl) emptyEl.style.display = visible === 0 ? "block" : "none";
+  },
+
+  // ── Column Sorting ───────────────────────────────────────────
+  initSort() {
+    document.querySelectorAll(".data-table thead th.sortable").forEach((th) => {
+      th.addEventListener("click", () => {
+        const table = th.closest(".data-table");
+        const colIdx = Array.from(th.parentElement.children).indexOf(th);
+        const asc = !th.classList.contains("sort-asc");
+
+        // Reset other headers
+        table.querySelectorAll("th").forEach((h) => {
+          h.classList.remove("sort-asc", "sort-desc");
+        });
+
+        th.classList.add(asc ? "sort-asc" : "sort-desc");
+        this.sortTable(table, colIdx, asc);
+      });
+    });
+  },
+
+  sortTable(table, colIdx, ascending) {
+    const tbody = table.querySelector("tbody");
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+
+    rows.sort((a, b) => {
+      const aText = a.children[colIdx]?.textContent.trim() || "";
+      const bText = b.children[colIdx]?.textContent.trim() || "";
+
+      const aNum = parseFloat(aText.replace(/[^0-9.-]/g, ""));
+      const bNum = parseFloat(bText.replace(/[^0-9.-]/g, ""));
+
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        return ascending ? aNum - bNum : bNum - aNum;
+      }
+
+      return ascending
+        ? aText.localeCompare(bText)
+        : bText.localeCompare(aText);
+    });
+
+    rows.forEach((row) => tbody.appendChild(row));
+  },
+
+  // ── Per Page Selector ────────────────────────────────────────
+  initPerPage() {
+    document.querySelectorAll("[data-per-page]").forEach((select) => {
+      const tableId = select.dataset.perPage;
+      const table = document.getElementById(tableId);
+      if (!table) return;
+
+      select.addEventListener("change", () => {
+        const perPage = parseInt(select.value);
+        const rows = table.querySelectorAll("tbody tr");
+
+        rows.forEach((row, i) => {
+          row.style.display = i < perPage || perPage === -1 ? "" : "none";
+        });
+      });
+    });
+  },
+
+  // ── Select All Checkbox ─────────────────────────────────────
+  initSelectAll() {
+    const selectAll = document.getElementById("select-all");
+    if (!selectAll) return;
+
+    selectAll.addEventListener("change", () => {
+      const checkboxes = document.querySelectorAll(".row-checkbox");
+      checkboxes.forEach((cb) => {
+        cb.checked = selectAll.checked;
+        cb.closest("tr")?.classList.toggle("selected", selectAll.checked);
+      });
+      this.updateBulkActions();
+    });
+
+    document.querySelectorAll(".row-checkbox").forEach((cb) => {
+      cb.addEventListener("change", () => {
+        cb.closest("tr")?.classList.toggle("selected", cb.checked);
+        this.updateSelectAll();
+        this.updateBulkActions();
+      });
+    });
+  },
+
+  updateSelectAll() {
+    const selectAll = document.getElementById("select-all");
+    const checkboxes = document.querySelectorAll(".row-checkbox");
+    const checked = document.querySelectorAll(".row-checkbox:checked");
+
+    if (!selectAll) return;
+    selectAll.indeterminate =
+      checked.length > 0 && checked.length < checkboxes.length;
+    selectAll.checked =
+      checked.length === checkboxes.length && checkboxes.length > 0;
+  },
+
+  updateBulkActions() {
+    const checked = document.querySelectorAll(".row-checkbox:checked");
+    const bulkPanel = document.getElementById("bulk-actions");
+    if (!bulkPanel) return;
+
+    bulkPanel.style.display = checked.length > 0 ? "flex" : "none";
+
+    const countEl = bulkPanel.querySelector(".bulk-count");
+    if (countEl) countEl.textContent = `${checked.length} selected`;
+  },
+
+  getSelectedIds() {
+    return Array.from(document.querySelectorAll(".row-checkbox:checked"))
+      .map((cb) => cb.value)
+      .filter(Boolean);
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   10. TOOLTIP MODULE
+══════════════════════════════════════════════════════════════ */
+const Tooltip = {
+  init() {
+    // CSS-only tooltips via [data-tooltip] — no JS needed
+    // This module is reserved for dynamic tooltips if needed
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   11. GRADE UI MODULE
+══════════════════════════════════════════════════════════════ */
+const GradeUI = {
+  init() {
+    this.animateGPARings();
+    this.initLiveGradeCalc();
+    this.initGradeInputValidation();
+    this.colorizeGradeScores();
+  },
+
+  // ── Animate GPA Ring ────────────────────────────────────────
+  animateGPARings() {
+    document.querySelectorAll(".gpa-ring").forEach((ring) => {
+      const fill = ring.querySelector(".gpa-ring-fill");
+      const valueEl = ring.querySelector(".gpa-value");
+      if (!fill || !valueEl) return;
+
+      const gpa = parseFloat(ring.dataset.gpa || 0);
+      const maxGpa = parseFloat(ring.dataset.maxGpa || 4.0);
+      const radius = parseFloat(fill.getAttribute("r") || 54);
+      const circumference = 2 * Math.PI * radius;
+
+      fill.style.strokeDasharray = circumference;
+      fill.style.strokeDashoffset = circumference;
+
+      // Color based on GPA
+      const pct = gpa / maxGpa;
+      let color;
+      if (pct >= 0.85) color = "#00d4aa";
+      else if (pct >= 0.7) color = "#54a0ff";
+      else if (pct >= 0.5) color = "#ff9f43";
+      else color = "#ff6b6b";
+
+      fill.style.stroke = color;
+
+      // Animate on enter
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const offset = circumference - pct * circumference;
+              fill.style.strokeDashoffset = offset;
+
+              // Count up GPA value
+              this.countUp(valueEl, 0, gpa, 1200, 2);
+              observer.unobserve(ring);
+            }
+          });
+        },
+        { threshold: 0.3 },
+      );
+
+      observer.observe(ring);
+    });
+  },
+
+  countUp(el, from, to, duration, decimals = 0) {
+    const start = performance.now();
+    const range = to - from;
+
+    const step = (timestamp) => {
+      const elapsed = timestamp - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease out cubic
+      const value = from + range * eased;
+
+      el.textContent = value.toFixed(decimals);
+
+      if (progress < 1) requestAnimationFrame(step);
+    };
+
+    requestAnimationFrame(step);
+  },
+
+  // ── Live Grade Calculator ───────────────────────────────────
+  initLiveGradeCalc() {
+    const gradeRows = document.querySelectorAll("[data-grade-row]");
+    if (!gradeRows.length) return;
+
+    gradeRows.forEach((row) => {
+      const inputs = row.querySelectorAll(".grade-input[data-weight]");
+      inputs.forEach((input) => {
+        input.addEventListener("input", () => this.calculateRowGrade(row));
+      });
+      this.calculateRowGrade(row); // initial calc
+    });
+
+    this.recalcAllRows();
+  },
+
+  calculateRowGrade(row) {
+    const inputs = row.querySelectorAll(".grade-input[data-weight]");
+    const finalEl = row.querySelector(".final-grade-display");
+    const remarkEl = row.querySelector(".grade-remark");
+
+    if (!finalEl) return;
+
+    let total = 0;
+    let weight = 0;
+    let valid = true;
+
+    inputs.forEach((input) => {
+      const val = parseFloat(input.value);
+      const w = parseFloat(input.dataset.weight || 1);
+
+      if (input.value.trim() === "") return; // skip empty
+
+      if (isNaN(val) || val < 0 || val > 100) {
+        input.classList.add("is-invalid");
+        valid = false;
+        return;
+      }
+
+      input.classList.remove("is-invalid");
+      total += val * w;
+      weight += w;
+    });
+
+    if (!valid || weight === 0) {
+      finalEl.textContent = "—";
+      finalEl.className = "final-grade-display";
+      if (remarkEl) remarkEl.textContent = "";
+      return;
+    }
+
+    const final = total / weight;
+    finalEl.textContent = final.toFixed(2);
+
+    // Apply color class
+    finalEl.className =
+      "final-grade-display grade-score " + this.getGradeClass(final);
+
+    // Remark
+    if (remarkEl) {
+      remarkEl.textContent = this.getGradeRemark(final);
+    }
+
+    // Highlight changed row
+    row.style.background = "rgba(108, 99, 255, 0.06)";
+    clearTimeout(row._highlightTimer);
+    row._highlightTimer = setTimeout(() => {
+      row.style.background = "";
+    }, 1200);
+  },
+
+  recalcAllRows() {
+    document.querySelectorAll("[data-grade-row]").forEach((row) => {
+      this.calculateRowGrade(row);
+    });
+  },
+
+  getGradeClass(score) {
+    if (score >= 90) return "excellent";
+    if (score >= 80) return "good";
+    if (score >= 70) return "average";
+    if (score >= 60) return "poor";
+    return "failed";
+  },
+
+  getGradeRemark(score) {
+    if (score >= 90) return "Excellent";
+    if (score >= 80) return "Good";
+    if (score >= 75) return "Satisfactory";
+    if (score >= 70) return "Fair";
+    if (score >= 60) return "Needs Improvement";
+    return "Failed";
+  },
+
+  // ── Grade Input Validation ───────────────────────────────────
+  initGradeInputValidation() {
+    document.querySelectorAll(".grade-input").forEach((input) => {
+      input.addEventListener("input", () => {
+        const val = parseFloat(input.value);
+        const min = parseFloat(input.min || 0);
+        const max = parseFloat(input.max || 100);
+
+        if (input.value === "") {
+          input.classList.remove("is-invalid", "is-valid");
+          return;
+        }
+
+        if (isNaN(val) || val < min || val > max) {
+          input.classList.add("is-invalid");
+          input.classList.remove("is-valid");
+        } else {
+          input.classList.add("is-valid");
+          input.classList.remove("is-invalid");
+        }
+      });
+
+      // Prevent non-numeric input
+      input.addEventListener("keypress", (e) => {
+        if (
+          !/[\d.]/.test(e.key) &&
+          !["Backspace", "Tab", "Enter", "ArrowLeft", "ArrowRight"].includes(
+            e.key,
+          )
+        ) {
+          e.preventDefault();
+        }
+      });
+    });
+  },
+
+  // ── Colorize Grade Scores ────────────────────────────────────
+  colorizeGradeScores() {
+    document.querySelectorAll(".grade-score[data-score]").forEach((el) => {
+      const score = parseFloat(el.dataset.score);
+      if (!isNaN(score)) {
+        el.classList.add(this.getGradeClass(score));
+      }
+    });
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   12. CHARTS MODULE (Chart.js wrapper)
+══════════════════════════════════════════════════════════════ */
+const Charts = {
+  defaults: {
+    fontFamily: "Inter, sans-serif",
+    color: "rgba(255,255,255,0.65)",
+    gridColor: "rgba(255,255,255,0.06)",
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+
+  instances: {},
+
+  init() {
+    if (typeof Chart === "undefined") return;
+
+    this.setGlobalDefaults();
+    this.initDashboardCharts();
+    this.initReportCharts();
+    this.initStudentCharts();
+  },
+
+  setGlobalDefaults() {
+    Chart.defaults.font.family = this.defaults.fontFamily;
+    Chart.defaults.color = this.defaults.color;
+    Chart.defaults.plugins.legend.labels.color = this.defaults.color;
+    Chart.defaults.plugins.tooltip.backgroundColor = "rgba(19,19,45,0.95)";
+    Chart.defaults.plugins.tooltip.borderColor = "rgba(255,255,255,0.10)";
+    Chart.defaults.plugins.tooltip.borderWidth = 1;
+    Chart.defaults.plugins.tooltip.padding = 12;
+    Chart.defaults.plugins.tooltip.titleColor = "#fff";
+    Chart.defaults.plugins.tooltip.bodyColor = "rgba(255,255,255,0.70)";
+    Chart.defaults.plugins.tooltip.cornerRadius = 8;
+    Chart.defaults.scale.grid.color = this.defaults.gridColor;
+    Chart.defaults.scale.border.color = this.defaults.borderColor;
+    Chart.defaults.scale.ticks.color = this.defaults.color;
+  },
+
+  // ── Dashboard Charts ─────────────────────────────────────────
+  initDashboardCharts() {
+    this.makeGradeDistributionChart();
+    this.makeEnrollmentTrendChart();
+    this.makePassFailChart();
+    this.makeTopSubjectsChart();
+  },
+
+  makeGradeDistributionChart() {
+    const canvas = document.getElementById("grade-distribution-chart");
+    if (!canvas) return;
+
+    const data = JSON.parse(canvas.dataset.chartData || "{}");
+    const labels = data.labels || [
+      "90-100",
+      "80-89",
+      "70-79",
+      "60-69",
+      "Below 60",
+    ];
+    const values = data.values || [0, 0, 0, 0, 0];
+
+    this.instances["gradeDistribution"] = new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Students",
+            data: values,
+            backgroundColor: [
+              "rgba(0,212,170,0.75)",
+              "rgba(84,160,255,0.75)",
+              "rgba(255,159,67,0.75)",
+              "rgba(255,107,107,0.75)",
+              "rgba(108,99,255,0.75)",
+            ],
+            borderColor: [
+              "#00d4aa",
+              "#54a0ff",
+              "#ff9f43",
+              "#ff6b6b",
+              "#6c63ff",
+            ],
+            borderWidth: 1.5,
+            borderRadius: 6,
+            borderSkipped: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.parsed.y} students`,
+            },
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { stepSize: 1 },
+          },
+        },
+      },
+    });
+  },
+
+  makeEnrollmentTrendChart() {
+    const canvas = document.getElementById("enrollment-trend-chart");
+    if (!canvas) return;
+
+    const data = JSON.parse(canvas.dataset.chartData || "{}");
+    const labels = data.labels || [];
+    const values = data.values || [];
+
+    this.instances["enrollmentTrend"] = new Chart(canvas, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Enrollments",
+            data: values,
+            borderColor: "#6c63ff",
+            backgroundColor: "rgba(108,99,255,0.12)",
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: "#6c63ff",
+            pointBorderColor: "#fff",
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+        },
+        scales: {
+          y: { beginAtZero: true },
+        },
+      },
+    });
+  },
+
+  makePassFailChart() {
+    const canvas = document.getElementById("pass-fail-chart");
+    if (!canvas) return;
+
+    const data = JSON.parse(canvas.dataset.chartData || "{}");
+    const passed = data.passed || 0;
+    const failed = data.failed || 0;
+
+    this.instances["passFail"] = new Chart(canvas, {
+      type: "doughnut",
+      data: {
+        labels: ["Passed", "Failed"],
+        datasets: [
+          {
+            data: [passed, failed],
+            backgroundColor: ["rgba(0,212,170,0.80)", "rgba(255,107,107,0.80)"],
+            borderColor: ["#00d4aa", "#ff6b6b"],
+            borderWidth: 2,
+            hoverOffset: 6,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "70%",
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10 },
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const total = passed + failed;
+                const pct =
+                  total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                return ` ${ctx.parsed} (${pct}%)`;
+              },
+            },
+          },
+        },
+      },
+    });
+  },
+
+  makeTopSubjectsChart() {
+    const canvas = document.getElementById("top-subjects-chart");
+    if (!canvas) return;
+
+    const data = JSON.parse(canvas.dataset.chartData || "{}");
+    const labels = data.labels || [];
+    const averages = data.averages || [];
+
+    this.instances["topSubjects"] = new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Average Grade",
+            data: averages,
+            backgroundColor: "rgba(108,99,255,0.70)",
+            borderColor: "#6c63ff",
+            borderWidth: 1.5,
+            borderRadius: 6,
+            borderSkipped: false,
+          },
+        ],
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+        },
+        scales: {
+          x: {
+            min: 0,
+            max: 100,
+            ticks: { callback: (v) => v + "%" },
+          },
+        },
+      },
+    });
+  },
+
+  // ── Report Charts ────────────────────────────────────────────
+  initReportCharts() {
+    this.makeGPATrendChart();
+    this.makeSubjectComparisonChart();
+  },
+
+  makeGPATrendChart() {
+    const canvas = document.getElementById("gpa-trend-chart");
+    if (!canvas) return;
+
+    const data = JSON.parse(canvas.dataset.chartData || "{}");
+    const labels = data.labels || [];
+    const gpas = data.gpas || [];
+
+    this.instances["gpaTrend"] = new Chart(canvas, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Average GPA",
+            data: gpas,
+            borderColor: "#00d4aa",
+            backgroundColor: "rgba(0,212,170,0.10)",
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: "#00d4aa",
+            pointBorderColor: "#fff",
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+        },
+        scales: {
+          y: { min: 0, max: 4 },
+        },
+      },
+    });
+  },
+
+  makeSubjectComparisonChart() {
+    const canvas = document.getElementById("subject-comparison-chart");
+    if (!canvas) return;
+
+    const data = JSON.parse(canvas.dataset.chartData || "{}");
+    const labels = data.labels || [];
+    const avg = data.averages || [];
+    const highest = data.highest || [];
+    const lowest = data.lowest || [];
+
+    this.instances["subjectComparison"] = new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Average",
+            data: avg,
+            backgroundColor: "rgba(108,99,255,0.70)",
+            borderColor: "#6c63ff",
+            borderWidth: 1.5,
+            borderRadius: 4,
+          },
+          {
+            label: "Highest",
+            data: highest,
+            backgroundColor: "rgba(0,212,170,0.50)",
+            borderColor: "#00d4aa",
+            borderWidth: 1.5,
+            borderRadius: 4,
+          },
+          {
+            label: "Lowest",
+            data: lowest,
+            backgroundColor: "rgba(255,107,107,0.50)",
+            borderColor: "#ff6b6b",
+            borderWidth: 1.5,
+            borderRadius: 4,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "top" },
+        },
+        scales: {
+          y: { min: 0, max: 100 },
+        },
+      },
+    });
+  },
+
+  // ── Student Charts ───────────────────────────────────────────
+  initStudentCharts() {
+    this.makeStudentGradeRadar();
+    this.makeStudentProgressChart();
+  },
+
+  makeStudentGradeRadar() {
+    const canvas = document.getElementById("student-radar-chart");
+    if (!canvas) return;
+
+    const data = JSON.parse(canvas.dataset.chartData || "{}");
+    const labels = data.labels || [];
+    const scores = data.scores || [];
+
+    this.instances["studentRadar"] = new Chart(canvas, {
+      type: "radar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Grade (%)",
+            data: scores,
+            borderColor: "#6c63ff",
+            backgroundColor: "rgba(108,99,255,0.15)",
+            borderWidth: 2,
+            pointBackgroundColor: "#6c63ff",
+            pointBorderColor: "#fff",
+            pointBorderWidth: 2,
+            pointRadius: 4,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            min: 0,
+            max: 100,
+            ticks: {
+              stepSize: 20,
+              backdropColor: "transparent",
+            },
+            grid: { color: "rgba(255,255,255,0.08)" },
+            angleLines: { color: "rgba(255,255,255,0.08)" },
+            pointLabels: {
+              color: "rgba(255,255,255,0.65)",
+              font: { size: 11 },
+            },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+        },
+      },
+    });
+  },
+
+  makeStudentProgressChart() {
+    const canvas = document.getElementById("student-progress-chart");
+    if (!canvas) return;
+
+    const data = JSON.parse(canvas.dataset.chartData || "{}");
+    const labels = data.labels || [];
+    const gpas = data.gpas || [];
+
+    this.instances["studentProgress"] = new Chart(canvas, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "GPA",
+            data: gpas,
+            borderColor: "#ff6b9d",
+            backgroundColor: "rgba(255,107,157,0.10)",
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: "#ff6b9d",
+            pointBorderColor: "#fff",
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+        },
+        scales: {
+          y: { min: 0, max: 4 },
+        },
+      },
+    });
+  },
+
+  // ── Destroy & Rebuild ────────────────────────────────────────
+  destroy(key) {
+    if (this.instances[key]) {
+      this.instances[key].destroy();
+      delete this.instances[key];
+    }
+  },
+
+  destroyAll() {
+    Object.keys(this.instances).forEach((key) => this.destroy(key));
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   13. API HELPER
+══════════════════════════════════════════════════════════════ */
+const API = {
+  baseUrl: "../api/grades.php",
+
+  async request(endpoint, options = {}) {
+    const token =
+      document.querySelector('meta[name="api-token"]')?.content || "";
+
+    const defaults = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        "X-Requested-With": "XMLHttpRequest",
+      },
+    };
+
+    const config = { ...defaults, ...options };
+    config.headers = { ...defaults.headers, ...(options.headers || {}) };
+
+    try {
+      const res = await fetch(endpoint || this.baseUrl, config);
+
+      if (res.status === 401) {
+        Toast.error("Session expired. Please log in again.");
+        setTimeout(() => (window.location.href = "../auth/login.php"), 2000);
+        return null;
+      }
+
+      if (res.status === 403) {
+        Toast.error("Access denied.");
+        return null;
+      }
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || `HTTP ${res.status}`);
+      }
+
+      return data;
+    } catch (err) {
+      console.error("[API Error]", err);
+      Toast.error(err.message || "A network error occurred.");
+      return null;
+    }
+  },
+
+  get(endpoint) {
+    return this.request(endpoint, { method: "GET" });
+  },
+  post(endpoint, body) {
+    return this.request(endpoint, {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+  put(endpoint, body) {
+    return this.request(endpoint, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    });
+  },
+  delete(endpoint) {
+    return this.request(endpoint, { method: "DELETE" });
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   14. FORM HELPERS
+══════════════════════════════════════════════════════════════ */
+const FormHelper = {
+  // Serialize form to plain object
+  serialize(form) {
+    const data = {};
+    new FormData(form).forEach((value, key) => {
+      if (data[key] !== undefined) {
+        if (!Array.isArray(data[key])) data[key] = [data[key]];
+        data[key].push(value);
+      } else {
+        data[key] = value;
+      }
+    });
+    return data;
+  },
+
+  // Populate form fields from object
+  populate(form, data) {
+    Object.entries(data).forEach(([key, value]) => {
+      const field = form.querySelector(`[name="${key}"]`);
+      if (!field) return;
+
+      if (field.type === "checkbox") {
+        field.checked = Boolean(value);
+      } else if (field.type === "radio") {
+        const radio = form.querySelector(`[name="${key}"][value="${value}"]`);
+        if (radio) radio.checked = true;
+      } else {
+        field.value = value ?? "";
+      }
+    });
+  },
+
+  // Reset validation states
+  resetValidation(form) {
+    form.querySelectorAll(".is-invalid, .is-valid").forEach((el) => {
+      el.classList.remove("is-invalid", "is-valid");
+    });
+    form.querySelectorAll(".form-error").forEach((el) => el.remove());
+  },
+
+  // Add loading state to submit button
+  setSubmitLoading(form, loading = true) {
+    const btn = form.querySelector('[type="submit"]');
+    if (!btn) return;
+
+    if (loading) {
+      btn.dataset.originalText = btn.innerHTML;
+      btn.innerHTML = '<span class="spinner"></span> Processing...';
+      btn.disabled = true;
+    } else {
+      btn.innerHTML = btn.dataset.originalText || "Submit";
+      btn.disabled = false;
+    }
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   15. UTILITY HELPERS
+══════════════════════════════════════════════════════════════ */
+const Utils = {
+  // Debounce
+  debounce(fn, delay = 300) {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), delay);
+    };
+  },
+
+  // Throttle
+  throttle(fn, limit = 300) {
+    let inThrottle;
+    return (...args) => {
+      if (!inThrottle) {
+        fn(...args);
+        inThrottle = true;
+        setTimeout(() => (inThrottle = false), limit);
+      }
+    };
+  },
+
+  // Format numbers
+  formatNumber(n) {
+    return Number(n).toLocaleString();
+  },
+
+  // Format GPA
+  formatGPA(gpa) {
+    return parseFloat(gpa || 0).toFixed(2);
+  },
+
+  // Get initials from name
+  getInitials(name = "") {
+    return name
+      .split(" ")
+      .slice(0, 2)
+      .map((w) => w[0] || "")
+      .join("")
+      .toUpperCase();
+  },
+
+  // Copy text to clipboard
+  async copyToClipboard(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      Toast.success("Copied to clipboard!");
+    } catch {
+      Toast.error("Could not copy to clipboard.");
+    }
+  },
+
+  // Format date to readable
+  formatDate(dateStr) {
+    if (!dateStr) return "—";
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  },
+
+  // Get grade letter
+  getGradeLetter(score) {
+    if (score >= 93) return "A";
+    if (score >= 90) return "A-";
+    if (score >= 87) return "B+";
+    if (score >= 83) return "B";
+    if (score >= 80) return "B-";
+    if (score >= 77) return "C+";
+    if (score >= 73) return "C";
+    if (score >= 70) return "C-";
+    if (score >= 60) return "D";
+    return "F";
+  },
+
+  // Escape HTML
+  escapeHtml(str = "") {
+    const map = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;",
+    };
+    return String(str).replace(/[&<>"']/g, (m) => map[m]);
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   16. CSV EXPORT HELPER
+══════════════════════════════════════════════════════════════ */
+const CSVExport = {
+  fromTable(tableId, filename = "export.csv") {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+
+    const rows = table.querySelectorAll("tr");
+    const csvRows = [];
+
+    rows.forEach((row) => {
+      const cells = row.querySelectorAll("th, td");
+      const data = Array.from(cells).map((cell) => {
+        let text = cell.textContent.trim().replace(/\s+/g, " ");
+        // Escape commas and quotes
+        if (text.includes(",") || text.includes('"')) {
+          text = `"${text.replace(/"/g, '""')}"`;
+        }
+        return text;
+      });
+      csvRows.push(data.join(","));
+    });
+
+    this.download(csvRows.join("\n"), filename);
+  },
+
+  fromData(data = [], filename = "export.csv") {
+    if (!data.length) return;
+
+    const headers = Object.keys(data[0]);
+    const rows = [
+      headers.join(","),
+      ...data.map((row) =>
+        headers
+          .map((h) => {
+            let val = String(row[h] ?? "").replace(/"/g, '""');
+            return val.includes(",") ? `"${val}"` : val;
+          })
+          .join(","),
+      ),
+    ];
+
+    this.download(rows.join("\n"), filename);
+  },
+
+  download(content, filename) {
+    const blob = new Blob(["\uFEFF" + content], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+    Toast.success(`${filename} downloaded!`);
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   17. PRINT HELPER
+══════════════════════════════════════════════════════════════ */
+const PrintHelper = {
+  print(elementId) {
+    const el = document.getElementById(elementId);
+    if (!el) {
+      window.print();
+      return;
+    }
+
+    const clone = el.cloneNode(true);
+    const win = window.open("", "_blank");
+    win.document.write(`
+      <html>
+        <head>
+          <title>Print</title>
+          <style>
+            body { font-family: Arial, sans-serif; color: #000; background: #fff; padding: 20px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+            th { background: #f0f0f0; }
+            .badge, .btn { display: none; }
+            @media print { body { print-color-adjust: exact; } }
+          </style>
+        </head>
+        <body>${clone.outerHTML}</body>
+      </html>
+    `);
+    win.document.close();
+    win.focus();
+    setTimeout(() => {
+      win.print();
+      win.close();
+    }, 500);
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   18. GLOBAL EXPOSE (for inline PHP onclick handlers)
+══════════════════════════════════════════════════════════════ */
+window.App = App;
+window.Modal = Modal;
+window.Toast = Toast;
+window.API = API;
+window.GradeUI = GradeUI;
+window.Charts = Charts;
+window.Table = Table;
+window.FormHelper = FormHelper;
+window.Utils = Utils;
+window.CSVExport = CSVExport;
+window.PrintHelper = PrintHelper;
