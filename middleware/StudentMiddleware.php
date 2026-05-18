@@ -9,7 +9,7 @@ require_once __DIR__ . '/../helpers/Auth.php';
 class StudentMiddleware {
 
     public static function handle(): void {
-        if (!Auth::check()) {
+        if (!Auth::isLoggedIn()) {
             header('Location: ../auth/login.php');
             exit();
         }

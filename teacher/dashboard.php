@@ -15,7 +15,7 @@ $teacherModel = new Teacher();
 $gradeModel   = new Grade();
 
 // ── Get Teacher Profile ───────────────────────────────────────
-$userId  = Auth::id();
+$userId  = Auth::getUserId();
 $teacher = $teacherModel->getByUserId($userId);
 
 if (!$teacher) {

@@ -6,14 +6,14 @@
 require_once 'helpers/Auth.php';
 require_once 'config/DB.php';
 
-if (!Auth::check()) {
+if (!Auth::isLoggedIn()) {
     header('Location: auth/login.php');
     exit();
 }
 
 $db     = DB::getInstance();
-$userId = Auth::id();
-$role   = Auth::role();
+$userId = Auth::getUserId();
+$role   = Auth::getRole();
 
 $success = '';
 $error   = '';

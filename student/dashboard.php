@@ -15,7 +15,7 @@ $db           = DB::getInstance();
 $studentModel = new Student();
 
 // ── Get Student Profile ───────────────────────────────────────
-$student = $studentModel->getByUserId(Auth::id());
+$student = $studentModel->getByUserId(Auth::getUserId());
 
 if (!$student) {
     Auth::logout();

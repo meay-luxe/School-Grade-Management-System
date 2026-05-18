@@ -19,6 +19,7 @@ class DB {
             $pass   = $_ENV['DB_PASSWORD'] ?? '';
             $charset= 'utf8mb4';
 
+            
             $dsn = "mysql:host={$host};dbname={$dbname};charset={$charset}";
 
             $options = [

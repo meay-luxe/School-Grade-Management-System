@@ -12,7 +12,7 @@ TeacherMiddleware::handle();
 $db           = DB::getInstance();
 $teacherModel = new Teacher();
 
-$teacher = $teacherModel->getByUserId(Auth::id());
+$teacher = $teacherModel->getByUserId(Auth::getUserId());
 if (!$teacher) {
     header('Location: ../auth/login.php');
     exit();

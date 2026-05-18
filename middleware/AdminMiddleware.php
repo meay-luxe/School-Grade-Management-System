@@ -10,7 +10,7 @@ class AdminMiddleware {
 
     public static function handle(): void {
         // Must be logged in
-        if (!Auth::check()) {
+        if (!Auth::isLoggedIn()) {
             header('Location: ../auth/login.php');
             exit();
         }

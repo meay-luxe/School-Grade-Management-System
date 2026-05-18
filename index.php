@@ -4,16 +4,24 @@
 // School Grade Management System
 // ============================================================
 
+session_start();
 require_once 'helpers/Auth.php';
 
-// If not logged in → go to login
-if (!Auth::check()) {
+// ── Check what methods your Auth.php actually has ─────────────
+// Common variations — one of these will match yours:
+
+// Option A: if Auth uses isLoggedIn()
+if (!Auth::isLoggedIn()) {
     header('Location: auth/login.php');
     exit();
 }
+$role = $_SESSION['role'] ?? '';
 
-// Redirect based on role
-$role = Auth::role();
+// Option B: if Auth uses isAuthenticated()
+// if (!Auth::isAuthenticated()) { ... }
+
+// Option C: if Auth checks session directly
+// if (!isset($_SESSION['user_id'])) { ... }
 
 switch ($role) {
     case 'admin':
@@ -26,7 +34,6 @@ switch ($role) {
         header('Location: student/dashboard.php');
         break;
     default:
-        Auth::logout();
         header('Location: auth/login.php');
         break;
 }
