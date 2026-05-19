@@ -16,7 +16,7 @@ $error   = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
-    if (!Auth::verifyCsrf($_POST['csrf_token'] ?? '')) {
+    if (!Auth::validateCsrf($_POST['csrf_token'] ?? '')) {
         $error = 'Invalid request. Please try again.';
     } else {
 
@@ -158,7 +158,7 @@ $semesters = $db->query(
      ORDER  BY s.school_year DESC, s.id DESC"
 )->fetchAll(PDO::FETCH_ASSOC);
 
-$csrfToken = Auth::getCsrf();
+$csrfToken = Auth::generateCsrf();
 $pageTitle = 'Manage Semesters';
 
 include '../shared/header.php';

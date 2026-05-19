@@ -79,7 +79,7 @@ $logs = $logStmt->fetchAll(PDO::FETCH_ASSOC);
 // ── Clear Logs Action ─────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST'
     && ($_POST['action'] ?? '') === 'clear_logs'
-    && Auth::verifyCsrf($_POST['csrf_token'] ?? '')) {
+    && Auth::validateCsrf($_POST['csrf_token'] ?? '')) {
 
     $days = (int) ($_POST['days'] ?? 30);
     $db->prepare(
@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'
     exit();
 }
 
-$csrfToken = Auth::getCsrf();
+$csrfToken = Auth::generateCsrf();
 $pageTitle = 'Audit Log';
 
 include '../shared/header.php';

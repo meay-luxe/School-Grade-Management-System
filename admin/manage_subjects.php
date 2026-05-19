@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
     // CSRF check
-    if (!Auth::verifyCsrf($_POST['csrf_token'] ?? '')) {
+    if (!Auth::validateCsrf($_POST['csrf_token'] ?? '')) {
         $error = 'Invalid request. Please try again.';
     } else {
 
@@ -144,7 +144,7 @@ $semesters = $db->query(
     "SELECT * FROM semesters ORDER BY school_year DESC, id DESC"
 )->fetchAll(PDO::FETCH_ASSOC);
 
-$csrfToken = Auth::getCsrf();
+$csrfToken = Auth::generateCsrf();
 $pageTitle = 'Manage Subjects';
 
 include '../shared/header.php';

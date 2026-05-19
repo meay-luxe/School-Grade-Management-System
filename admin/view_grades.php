@@ -18,7 +18,7 @@ $error      = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
-    if (!Auth::verifyCsrf($_POST['csrf_token'] ?? '')) {
+    if (!Auth::validateCsrf($_POST['csrf_token'] ?? '')) {
         $error = 'Invalid request.';
     } else {
         switch ($action) {
@@ -82,7 +82,7 @@ $summary = $filterSemesterId
     ? $gradeModel->getSummary($filterSemesterId)
     : [];
 
-$csrfToken = Auth::getCsrf();
+$csrfToken = Auth::generateCsrf();
 $pageTitle = 'View Grades';
 
 include '../shared/header.php';

@@ -1,21 +1,13 @@
 <?php
-// ============================================================
-// AdminMiddleware.php
-// School Grade Management System
-// ============================================================
-
 require_once __DIR__ . '/../helpers/Auth.php';
 
 class AdminMiddleware {
-
     public static function handle(): void {
-        // Must be logged in
         if (!Auth::isLoggedIn()) {
             header('Location: ../auth/login.php');
             exit();
         }
 
-        // Must be admin
         if (!Auth::isAdmin()) {
             http_response_code(403);
             include __DIR__ . '/../shared/header.php';
@@ -24,7 +16,7 @@ class AdminMiddleware {
               <div class="empty-state">
                 <div class="empty-state-icon">🚫</div>
                 <h3>Access Denied</h3>
-                <p>You do not have permission to access this page.</p>
+                <p>You do not have permission to view this page.</p>
                 <a href="../index.php" class="btn btn-primary mt-4">
                   Go Back
                 </a>
