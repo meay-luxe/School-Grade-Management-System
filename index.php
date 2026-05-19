@@ -1,25 +1,24 @@
 <?php
-session_start();
+// ============================================================
+// index.php — Root Entry Point
+// ============================================================
+
 require_once 'helpers/Auth.php';
+require_once 'config/App.php';
+
+Auth::startSession();
 
 if (!Auth::isLoggedIn()) {
-    header('Location: auth/login.php');
-    exit();
+    App::redirect('/auth/login.php');
 }
 
 switch (Auth::getRole()) {
     case 'admin':
-        header('Location: admin/dashboard.php');
-        break;
+        App::redirect('/admin/dashboard.php');
     case 'teacher':
-        header('Location: teacher/dashboard.php');
-        break;
+        App::redirect('/teacher/dashboard.php');
     case 'student':
-        header('Location: student/dashboard.php');
-        break;
+        App::redirect('/student/dashboard.php');
     default:
         Auth::logout();
-        header('Location: auth/login.php');
-        break;
 }
-exit();

@@ -138,7 +138,7 @@ $passFailData = json_encode([
 // ── Top Students ──────────────────────────────────────────────
 $stmt = $db->prepare(
     "SELECT s.first_name, s.last_name,
-            s.student_id AS student_number,
+            s.student_number,
             AVG(g.final_grade)  AS avg_grade,
             COUNT(g.id)         AS subjects_count
      FROM   grades g

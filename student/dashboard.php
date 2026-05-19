@@ -164,21 +164,6 @@ $radarData = json_encode([
 ]);
 
 // ── Progress Chart (GPA history across semesters) ────────────
-$progressRaw = $db->prepare(
-    "SELECT sem.name AS sem_name,
-            sem.school_year,
-            AVG(GradeCalculator_gpa(g.final_grade)) AS avg_gpa
-     FROM   grades g
-     JOIN   enrollments e  ON e.id = g.enrollment_id
-     JOIN   semesters sem  ON sem.id = e.semester_id
-     WHERE  e.student_id   = :student_id
-     AND    g.final_grade  IS NOT NULL
-     GROUP  BY sem.id
-     ORDER  BY sem.school_year, sem.id"
-);
-
-// Note: GradeCalculator_gpa is not a MySQL function,
-// so we compute it in PHP instead
 $stmt = $db->prepare(
     "SELECT sem.id, sem.name AS sem_name,
             sem.school_year,
@@ -228,7 +213,7 @@ $greeting     = $greetingHour < 12 ? 'Good Morning'
               : ($greetingHour < 17 ? 'Good Afternoon'
               : 'Good Evening');
 
-$overallStanding = GradeCalculator::getStandingFromGPA($overallGPA);
+$overallStanding = GradeCalculator::getStanding($overallGPA > 0 ? GradeCalculator::gradeToGPA($overallGPA) : null);
 
 include '../shared/header.php';
 include '../shared/sidebar.php';
@@ -422,7 +407,7 @@ include '../shared/sidebar.php';
               'Needs Improvement'=> ['badge-average',   '⚠️'],
               'Academic Probation'=> ['badge-failed',   '❌'],
             ];
-            $currentStanding = GradeCalculator::getStandingFromGPA($currentGPA);
+            $currentStanding = GradeCalculator::getStanding($currentGPA > 0 ? GradeCalculator::gradeToGPA($currentGPA) : null);
             [$standBadge, $standIcon] = $standingMap[$currentStanding]
               ?? ['badge-muted', '📋'];
           ?>

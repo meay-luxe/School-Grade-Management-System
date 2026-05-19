@@ -77,7 +77,7 @@ include __DIR__ . '/../shared/header.php';
     </div>
   </div>
   <div class="topbar-actions">
-    <a href="/admin/manage_semesters.php" class="btn btn-glass">📅 Manage Semester</a>
+    <a href="<?= App::url('/admin/manage_semesters.php') ?>" class="btn btn-glass">📅 Manage Semester</a>
   </div>
 </div>
 
@@ -174,7 +174,7 @@ include __DIR__ . '/../shared/header.php';
 <div class="table-card">
   <div class="table-header">
     <div class="table-title">🕵️ Recent Activity</div>
-    <a href="/admin/audit_log.php" class="btn btn-glass btn-sm">View All</a>
+    <a href="<?= App::url('/admin/audit_log.php') ?>" class="btn btn-glass btn-sm">View All</a>
   </div>
   <div style="padding:8px 24px 16px">
     <?php if (empty($recentAudit)): ?>

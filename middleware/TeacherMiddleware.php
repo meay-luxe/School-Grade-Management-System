@@ -4,8 +4,7 @@ require_once __DIR__ . '/../helpers/Auth.php';
 class TeacherMiddleware {
     public static function handle(): void {
         if (!Auth::isLoggedIn()) {
-            header('Location: ../auth/login.php');
-            exit();
+            App::redirect('/auth/login.php');
         }
 
         if (!Auth::isTeacher()) {
@@ -17,7 +16,7 @@ class TeacherMiddleware {
                 <div class="empty-state-icon">🚫</div>
                 <h3>Access Denied</h3>
                 <p>You do not have permission to view this page.</p>
-                <a href="../index.php" class="btn btn-primary mt-4">
+                <a href="' . App::url('/index.php') . '" class="btn btn-primary mt-4">
                   Go Back
                 </a>
               </div>

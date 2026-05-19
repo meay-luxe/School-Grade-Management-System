@@ -235,7 +235,7 @@ include __DIR__ . '/../shared/header.php';
           <td class="text-muted"><?= htmlspecialchars($s['section'], ENT_QUOTES, 'UTF-8') ?></td>
           <td>
             <div style="display:flex;gap:6px">
-              <a href="/admin/manage_students.php?view=<?= $s['id'] ?>" class="btn btn-glass btn-sm btn-icon" title="View">👁</a>
+              <a href="<?= App::url('/admin/manage_students.php') ?>?view=<?= $s['id'] ?>" class="btn btn-glass btn-sm btn-icon" title="View">👁</a>
               <form method="POST" style="display:inline"
                 onsubmit="return confirm('Delete student <?= htmlspecialchars($s['name'], ENT_QUOTES, 'UTF-8') ?>? This cannot be undone.')">
                 <?= Auth::csrfField() ?>

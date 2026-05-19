@@ -16,7 +16,7 @@ class Teacher {
 
     // ── Get All Teachers ──────────────────────────────────────
     public function getAll(array $filters = []): array {
-        $sql    = "SELECT t.*, u.username, u.email, u.is_active,
+        $sql    = "SELECT t.*, u.name, u.email, u.is_active,
                           u.created_at AS account_created
                    FROM   teachers t
                    JOIN   users u ON u.id = t.user_id
@@ -51,7 +51,7 @@ class Teacher {
     // ── Get By ID ─────────────────────────────────────────────
     public function getById(int $id): array|false {
         $stmt = $this->db->prepare(
-            "SELECT t.*, u.username, u.email, u.is_active
+            "SELECT t.*, u.name, u.email, u.is_active
              FROM   teachers t
              JOIN   users u ON u.id = t.user_id
              WHERE  t.id = :id
@@ -64,7 +64,7 @@ class Teacher {
     // ── Get By User ID ────────────────────────────────────────
     public function getByUserId(int $userId): array|false {
         $stmt = $this->db->prepare(
-            "SELECT t.*, u.username, u.email, u.is_active
+            "SELECT t.*, u.name, u.email, u.is_active
              FROM   teachers t
              JOIN   users u ON u.id = t.user_id
              WHERE  t.user_id = :user_id
@@ -79,13 +79,13 @@ class Teacher {
         try {
             $this->db->beginTransaction();
 
-            // 1. Create user account
+            // 1. Create user account — users table has no 'username' column
             $stmt = $this->db->prepare(
-                "INSERT INTO users (username, email, password, role, is_active)
-                 VALUES (:username, :email, :password, 'teacher', 1)"
+                "INSERT INTO users (name, email, password, role, is_active)
+                 VALUES (:name, :email, :password, 'teacher', 1)"
             );
             $stmt->execute([
-                ':username' => $data['username'],
+                ':name'     => trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? '')),
                 ':email'    => $data['email'],
                 ':password' => password_hash($data['password'], PASSWORD_BCRYPT),
             ]);

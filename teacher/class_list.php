@@ -67,7 +67,7 @@ if ($subjectId && $semesterId) {
         "SELECT s.id AS student_id,
                 s.first_name,
                 s.last_name,
-                s.student_id AS student_number,
+                s.student_number,
                 s.year_level,
                 s.section,
                 s.course,

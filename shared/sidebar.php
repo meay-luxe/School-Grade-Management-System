@@ -4,8 +4,10 @@
    File: shared/sidebar.php
    ============================================================ */
 
-$role       = $_SESSION['role']  ?? '';
-$userName   = $_SESSION['name']  ?? 'User';
+require_once __DIR__ . '/../config/App.php';
+
+$role     = $_SESSION['role']  ?? '';
+$userName = $_SESSION['name']  ?? 'User';
 $initials   = strtoupper(substr($userName, 0, 1) . (strpos($userName, ' ') !== false
     ? substr($userName, strrpos($userName, ' ') + 1, 1) : ''));
 
@@ -20,43 +22,44 @@ $avatarBg = $avatarGradients[$role] ?? $avatarGradients['student'];
 $nav = [
     'admin' => [
         ['label' => 'OVERVIEW', 'items' => [
-            ['icon' => '🏠', 'text' => 'Dashboard',    'href' => '/admin/dashboard.php'],
+            ['icon' => '🏠', 'text' => 'Dashboard',    'href' => App::url('/admin/dashboard.php')],
         ]],
         ['label' => 'MANAGEMENT', 'items' => [
-            ['icon' => '👥', 'text' => 'Users',       'href' => '/admin/user_management.php'],
-            ['icon' => '🎓', 'text' => 'Students',    'href' => '/admin/manage_students.php'],
-            ['icon' => '📚', 'text' => 'Subjects',    'href' => '/admin/manage_subjects.php'],
-            ['icon' => '📅', 'text' => 'Semesters',   'href' => '/admin/manage_semesters.php'],
-            ['icon' => '📝', 'text' => 'Enrollment',  'href' => '/admin/manage_enrollment.php'],
+            ['icon' => '👥', 'text' => 'Users',       'href' => App::url('/admin/user_management.php')],
+            ['icon' => '🎓', 'text' => 'Students',    'href' => App::url('/admin/manage_students.php')],
+            ['icon' => '📚', 'text' => 'Subjects',    'href' => App::url('/admin/manage_subjects.php')],
+            ['icon' => '📅', 'text' => 'Semesters',   'href' => App::url('/admin/manage_semesters.php')],
+            ['icon' => '📝', 'text' => 'Enrollment',  'href' => App::url('/admin/manage_enrollment.php')],
         ]],
         ['label' => 'GRADES', 'items' => [
-            ['icon' => '📊', 'text' => 'Grade Records', 'href' => '/admin/view_grades.php'],
-            ['icon' => '📈', 'text' => 'Reports',        'href' => '/admin/reports.php'],
+            ['icon' => '📊', 'text' => 'Grade Records', 'href' => App::url('/admin/view_grades.php')],
+            ['icon' => '📈', 'text' => 'Reports',        'href' => App::url('/admin/reports.php')],
         ]],
         ['label' => 'SYSTEM', 'items' => [
-            ['icon' => '🔗', 'text' => 'JSON API',  'href' => '/api/grades.php'],
-            ['icon' => '🕵️', 'text' => 'Audit Log', 'href' => '/admin/audit_log.php'],
-            ['icon' => '👤', 'text' => 'Profile',   'href' => '/profile.php'],
+            ['icon' => '🔗', 'text' => 'JSON API',  'href' => App::url('/api/grades.php')],
+            ['icon' => '🕵️', 'text' => 'Audit Log', 'href' => App::url('/admin/audit_log.php')],
+            ['icon' => '👤', 'text' => 'Profile',   'href' => App::url('/profile.php')],
         ]],
     ],
     'teacher' => [
         ['label' => 'TEACHING', 'items' => [
-            ['icon' => '📚', 'text' => 'My Subjects',   'href' => '/teacher/my_subjects.php'],
-            ['icon' => '📊', 'text' => 'Manage Grades', 'href' => '/teacher/manage_grades.php'],
-            ['icon' => '📈', 'text' => 'My Reports',    'href' => '/teacher/reports.php'],
+            ['icon' => '🏠', 'text' => 'Dashboard',     'href' => App::url('/teacher/dashboard.php')],
+            ['icon' => '📚', 'text' => 'My Subjects',   'href' => App::url('/teacher/my_subjects.php')],
+            ['icon' => '📊', 'text' => 'Manage Grades', 'href' => App::url('/teacher/manage_grades.php')],
+            ['icon' => '📈', 'text' => 'My Reports',    'href' => App::url('/teacher/reports.php')],
         ]],
         ['label' => 'ACCOUNT', 'items' => [
-            ['icon' => '🔗', 'text' => 'JSON API', 'href' => '/api/grades.php'],
-            ['icon' => '👤', 'text' => 'Profile',  'href' => '/profile.php'],
+            ['icon' => '🔗', 'text' => 'JSON API', 'href' => App::url('/api/grades.php')],
+            ['icon' => '👤', 'text' => 'Profile',  'href' => App::url('/profile.php')],
         ]],
     ],
     'student' => [
         ['label' => 'ACADEMIC', 'items' => [
-            ['icon' => '🏠', 'text' => 'Dashboard', 'href' => '/student/dashboard.php'],
-            ['icon' => '📋', 'text' => 'My Grades', 'href' => '/student/grades.php'],
+            ['icon' => '🏠', 'text' => 'Dashboard', 'href' => App::url('/student/dashboard.php')],
+            ['icon' => '📋', 'text' => 'My Grades', 'href' => App::url('/student/grades.php')],
         ]],
         ['label' => 'ACCOUNT', 'items' => [
-            ['icon' => '👤', 'text' => 'Profile', 'href' => '/profile.php'],
+            ['icon' => '👤', 'text' => 'Profile', 'href' => App::url('/profile.php')],
         ]],
     ],
 ];
@@ -88,7 +91,7 @@ $sections    = $nav[$role] ?? [];
   <?php endforeach; ?>
 
   <!-- User info + logout -->
-  <a class="sidebar-user" href="/profile.php" style="text-decoration:none">
+  <a class="sidebar-user" href="<?= App::url('/profile.php') ?>" style="text-decoration:none">
     <div class="user-avatar" style="background:<?= $avatarBg ?>">
       <?= htmlspecialchars($initials) ?>
     </div>
@@ -96,7 +99,7 @@ $sections    = $nav[$role] ?? [];
       <div class="user-name"><?= htmlspecialchars($userName) ?></div>
       <div class="user-role"><?= htmlspecialchars(ucfirst($role)) ?></div>
     </div>
-    <a class="logout-btn" href="/auth/logout.php" title="Logout"
+    <a class="logout-btn" href="<?= App::url('/auth/logout.php') ?>" title="Logout"
        onclick="return confirm('Log out?')">⬡</a>
   </a>
 </nav>

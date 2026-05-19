@@ -13,11 +13,38 @@ class DB {
 
     public static function getInstance(): PDO {
         if (self::$instance === null) {
-            $host   = $_ENV['DB_HOST']     ?? 'localhost';
-            $dbname = $_ENV['DB_NAME']     ?? 'grade_management';
-            $user   = $_ENV['DB_USER']     ?? 'root';
-            $pass   = $_ENV['DB_PASSWORD'] ?? '';
-            $charset= 'utf8mb4';
+            // Load .env file if $_ENV is not already populated.
+            // This is a lightweight fallback — no external library needed.
+            if (empty($_ENV['DB_HOST'])) {
+                $envFile = __DIR__ . '/../.env';
+                if (file_exists($envFile)) {
+                    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+                    foreach ($lines as $line) {
+                        $line = trim($line);
+                        // Skip comments and lines without '='
+                        if ($line === '' || $line[0] === '#' || strpos($line, '=') === false) {
+                            continue;
+                        }
+                        [$key, $value] = explode('=', $line, 2);
+                        $key   = trim($key);
+                        $value = trim($value);
+                        // Strip surrounding quotes if present
+                        if (preg_match('/^(["\']).*\1$/', $value)) {
+                            $value = substr($value, 1, -1);
+                        }
+                        if (!array_key_exists($key, $_ENV)) {
+                            $_ENV[$key]    = $value;
+                            putenv("{$key}={$value}");
+                        }
+                    }
+                }
+            }
+
+            $host    = $_ENV['DB_HOST']     ?? 'localhost';
+            $dbname  = $_ENV['DB_NAME']     ?? 'grade_management';
+            $user    = $_ENV['DB_USER']     ?? 'root';
+            $pass    = $_ENV['DB_PASSWORD'] ?? '';
+            $charset = 'utf8mb4';
 
             
             $dsn = "mysql:host={$host};dbname={$dbname};charset={$charset}";

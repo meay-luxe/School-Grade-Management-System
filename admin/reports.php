@@ -138,7 +138,7 @@ $comparisonData = json_encode([
 
 // ── Top Performing Students ───────────────────────────────────
 $topStudents = $db->prepare(
-    "SELECT s.first_name, s.last_name, s.student_id AS student_number,
+    "SELECT s.first_name, s.last_name, s.student_number,
             AVG(g.final_grade) AS avg_grade,
             COUNT(g.id)        AS subjects_graded
      FROM   grades g

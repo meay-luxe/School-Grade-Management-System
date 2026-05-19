@@ -1,9 +1,5 @@
 <?php
-/* ============================================================
-   GradeMS — Shared Footer Partial
-   File: shared/footer.php
-   Usage: include at the bottom of every authenticated page
-   ============================================================ */
+require_once __DIR__ . '/../config/App.php';
 ?>
   </main><!-- /#main -->
 </div><!-- /#app -->
@@ -12,7 +8,7 @@
 <div class="toast" id="toast"></div>
 
 <!-- Core JS -->
-<script src="/assets/js/app.js"></script>
+<script src="<?= App::url('/assets/js/app.js') ?>"></script>
 
 <?php if (isset($extraJs)): ?>
   <script src="<?= htmlspecialchars($extraJs, ENT_QUOTES, 'UTF-8') ?>"></script>

@@ -5,6 +5,7 @@
    ============================================================ */
 
 require_once __DIR__ . '/../config/DB.php';
+require_once __DIR__ . '/../config/App.php';
 
 class Auth {
 
@@ -82,7 +83,7 @@ class Auth {
         self::logAction('Logout', 'User logged out');
         $_SESSION = [];
         session_destroy();
-        header('Location: /auth/login.php');
+        App::redirect('/auth/login.php');
         exit;
     }
 
@@ -96,22 +97,66 @@ class Auth {
         self::startSession();
 
         if (empty($_SESSION['user_id'])) {
-            header('Location: /auth/login.php');
+            App::redirect('/auth/login.php');
             exit;
         }
 
         $allowed = (array) $roles;
         if (!in_array($_SESSION['role'], $allowed, true)) {
             http_response_code(403);
-            // Redirect to their own dashboard instead of showing an error
             $dashboards = [
                 'admin'   => '/admin/dashboard.php',
                 'teacher' => '/teacher/dashboard.php',
                 'student' => '/student/dashboard.php',
             ];
-            header('Location: ' . ($dashboards[$_SESSION['role']] ?? '/auth/login.php'));
+            App::redirect($dashboards[$_SESSION['role']] ?? '/auth/login.php');
             exit;
         }
+    }
+
+    /**
+     * Check if a user is currently logged in (session exists).
+     */
+    public static function isLoggedIn(): bool {
+        self::startSession();
+        return !empty($_SESSION['user_id']);
+    }
+
+    /**
+     * Return the current user's role from the session.
+     */
+    public static function getRole(): string {
+        self::startSession();
+        return $_SESSION['role'] ?? '';
+    }
+
+    /**
+     * Return the current user's ID from the session.
+     */
+    public static function getUserId(): int {
+        self::startSession();
+        return (int) ($_SESSION['user_id'] ?? 0);
+    }
+
+    /**
+     * Return true if the current user is an admin.
+     */
+    public static function isAdmin(): bool {
+        return self::getRole() === 'admin';
+    }
+
+    /**
+     * Return true if the current user is a teacher.
+     */
+    public static function isTeacher(): bool {
+        return self::getRole() === 'teacher';
+    }
+
+    /**
+     * Return true if the current user is a student.
+     */
+    public static function isStudent(): bool {
+        return self::getRole() === 'student';
     }
 
     /**

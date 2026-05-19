@@ -23,7 +23,7 @@ $where  = "WHERE 1=1";
 $params = [];
 
 if ($filterUser) {
-    $where .= " AND (u.username LIKE :user
+    $where .= " AND (u.name LIKE :user
                 OR   CONCAT(
                        COALESCE(s.first_name,''),
                        COALESCE(t.first_name,'')
@@ -56,12 +56,12 @@ $totalPages   = (int) ceil($totalRecords / $perPage);
 // Logs
 $logStmt = $db->prepare(
     "SELECT al.*,
-            u.username,
+            u.name AS username,
             u.role,
             COALESCE(
               CONCAT(s.first_name, ' ', s.last_name),
               CONCAT(t.first_name, ' ', t.last_name),
-              u.username
+              u.name
             ) AS full_name
      FROM   audit_logs al
      JOIN   users u ON u.id = al.user_id

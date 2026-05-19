@@ -157,7 +157,7 @@ include __DIR__ . '/../shared/header.php';
         <?php endforeach; ?>
       </select>
     </form>
-    <a href="/teacher/my_subjects.php" class="btn btn-glass">← My Subjects</a>
+    <a href="<?= App::url('/teacher/my_subjects.php') ?>" class="btn btn-glass">← My Subjects</a>
   </div>
 </div>
 

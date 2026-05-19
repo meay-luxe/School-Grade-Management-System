@@ -53,11 +53,11 @@ $fullName = trim(
     ($profile['first_name'] ?? '')
     . ' '
     . ($profile['last_name'] ?? '')
-) ?: $user['username'];
+) ?: $user['name'];
 
 $initials = strtoupper(
-    substr($profile['first_name'] ?? $user['username'], 0, 1)
-    . substr($profile['last_name'] ?? '',               0, 1)
+    substr($profile['first_name'] ?? $user['name'], 0, 1)
+    . substr($profile['last_name'] ?? '',            0, 1)
 );
 
 // ── Handle POST ───────────────────────────────────────────────
@@ -484,13 +484,13 @@ include 'shared/sidebar.php';
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">Username</label>
+                  <label class="form-label">Display Name</label>
                   <input type="text"
                          class="form-control"
-                         value="<?= htmlspecialchars($user['username']) ?>"
+                         value="<?= htmlspecialchars($user['name']) ?>"
                          disabled>
                   <span class="form-hint">
-                    Username cannot be changed.
+                    Display name cannot be changed here.
                   </span>
                 </div>
 
@@ -710,6 +710,8 @@ include 'shared/sidebar.php';
               <div class="glass-card-body">
                 <?php
                   // Quick academic stats
+                  // $profile['id'] is the students.id for the logged-in student
+                  $studentRowId = $profile['id'] ?? 0;
                   $stmt = $db->prepare(
                       "SELECT COUNT(DISTINCT e.semester_id) AS semesters,
                               COUNT(e.id)                  AS total_subjects,
@@ -722,7 +724,7 @@ include 'shared/sidebar.php';
                        LEFT JOIN grades g  ON g.enrollment_id = e.id
                        WHERE  e.student_id = :sid"
                   );
-                  $stmt->execute([':sid' => $studentId ?? 0]);
+                  $stmt->execute([':sid' => $studentRowId]);
                   $acadStats = $stmt->fetch(PDO::FETCH_ASSOC);
                 ?>
                 <div class="grid-2" style="gap:var(--space-4)">

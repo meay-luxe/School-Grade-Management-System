@@ -16,7 +16,7 @@ class Student {
 
     // ── Get All Students ──────────────────────────────────────
     public function getAll(array $filters = []): array {
-        $sql    = "SELECT s.*, u.username, u.email, u.is_active,
+        $sql    = "SELECT s.*, u.name, u.email, u.is_active,
                           u.created_at AS account_created
                    FROM   students s
                    JOIN   users u ON u.id = s.user_id
@@ -26,7 +26,7 @@ class Student {
         if (!empty($filters['search'])) {
             $sql .= " AND (s.first_name LIKE :search
                       OR   s.last_name  LIKE :search
-                      OR   s.student_id LIKE :search
+                      OR   s.student_number LIKE :search
                       OR   u.email      LIKE :search)";
             $params[':search'] = '%' . $filters['search'] . '%';
         }
@@ -51,7 +51,7 @@ class Student {
     // ── Get By ID ─────────────────────────────────────────────
     public function getById(int $id): array|false {
         $stmt = $this->db->prepare(
-            "SELECT s.*, u.username, u.email, u.is_active, u.created_at
+            "SELECT s.*, u.name, u.email, u.is_active, u.created_at
              FROM   students s
              JOIN   users u ON u.id = s.user_id
              WHERE  s.id = :id
@@ -64,7 +64,7 @@ class Student {
     // ── Get By User ID ────────────────────────────────────────
     public function getByUserId(int $userId): array|false {
         $stmt = $this->db->prepare(
-            "SELECT s.*, u.username, u.email, u.is_active
+            "SELECT s.*, u.name, u.email, u.is_active
              FROM   students s
              JOIN   users u ON u.id = s.user_id
              WHERE  s.user_id = :user_id
@@ -75,15 +75,15 @@ class Student {
     }
 
     // ── Get By Student Number ─────────────────────────────────
-    public function getByStudentId(string $studentId): array|false {
+    public function getByStudentId(string $studentNumber): array|false {
         $stmt = $this->db->prepare(
-            "SELECT s.*, u.username, u.email
+            "SELECT s.*, u.name, u.email
              FROM   students s
              JOIN   users u ON u.id = s.user_id
-             WHERE  s.student_id = :student_id
+             WHERE  s.student_number = :student_number
              LIMIT  1"
         );
-        $stmt->execute([':student_id' => $studentId]);
+        $stmt->execute([':student_number' => $studentNumber]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
@@ -92,13 +92,14 @@ class Student {
         try {
             $this->db->beginTransaction();
 
-            // 1. Create user account
+            // 1. Create user account — users table has no 'username' column,
+            //    name is the display name; email is used for login
             $stmt = $this->db->prepare(
-                "INSERT INTO users (username, email, password, role, is_active)
-                 VALUES (:username, :email, :password, 'student', 1)"
+                "INSERT INTO users (name, email, password, role, is_active)
+                 VALUES (:name, :email, :password, 'student', 1)"
             );
             $stmt->execute([
-                ':username' => $data['username'],
+                ':name'     => trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? '')),
                 ':email'    => $data['email'],
                 ':password' => password_hash($data['password'], PASSWORD_BCRYPT),
             ]);
@@ -107,22 +108,22 @@ class Student {
             // 2. Create student profile
             $stmt = $this->db->prepare(
                 "INSERT INTO students
-                    (user_id, student_id, first_name, last_name,
+                    (user_id, student_number, first_name, last_name,
                      middle_name, year_level, section, course, contact_no)
                  VALUES
-                    (:user_id, :student_id, :first_name, :last_name,
+                    (:user_id, :student_number, :first_name, :last_name,
                      :middle_name, :year_level, :section, :course, :contact_no)"
             );
             $stmt->execute([
-                ':user_id'     => $userId,
-                ':student_id'  => $data['student_id'],
-                ':first_name'  => $data['first_name'],
-                ':last_name'   => $data['last_name'],
-                ':middle_name' => $data['middle_name'] ?? null,
-                ':year_level'  => $data['year_level'],
-                ':section'     => $data['section']    ?? null,
-                ':course'      => $data['course']     ?? null,
-                ':contact_no'  => $data['contact_no'] ?? null,
+                ':user_id'        => $userId,
+                ':student_number' => $data['student_number'] ?? ($data['student_id'] ?? ''),
+                ':first_name'     => $data['first_name'],
+                ':last_name'      => $data['last_name'],
+                ':middle_name'    => $data['middle_name'] ?? null,
+                ':year_level'     => $data['year_level'],
+                ':section'        => $data['section']    ?? null,
+                ':course'         => $data['course']     ?? null,
+                ':contact_no'     => $data['contact_no'] ?? null,
             ]);
             $studentId = (int) $this->db->lastInsertId();
 
@@ -305,13 +306,13 @@ class Student {
         return (int) $this->db->query($sql)->fetchColumn();
     }
 
-    // ── Student ID Exists ─────────────────────────────────────
-    public function studentIdExists(string $studentId, int $excludeId = 0): bool {
+    // ── Student Number Exists ─────────────────────────────────
+    public function studentIdExists(string $studentNumber, int $excludeId = 0): bool {
         $stmt = $this->db->prepare(
             "SELECT COUNT(*) FROM students
-             WHERE  student_id = :student_id AND id != :exclude_id"
+             WHERE  student_number = :student_number AND id != :exclude_id"
         );
-        $stmt->execute([':student_id' => $studentId, ':exclude_id' => $excludeId]);
+        $stmt->execute([':student_number' => $studentNumber, ':exclude_id' => $excludeId]);
         return (int) $stmt->fetchColumn() > 0;
     }
 }

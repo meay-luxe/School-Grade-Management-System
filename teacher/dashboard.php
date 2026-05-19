@@ -43,28 +43,6 @@ foreach ($mySubjects as $sub) {
 }
 
 // ── Grades Submitted ─────────────────────────────────────────
-$gradedCount = (int) $db->prepare(
-    "SELECT COUNT(DISTINCT g.id)
-     FROM   grades g
-     JOIN   enrollments e  ON e.id = g.enrollment_id
-     JOIN   teacher_subjects ts ON ts.subject_id = e.subject_id
-                AND ts.semester_id = e.semester_id
-     WHERE  ts.teacher_id  = :teacher_id
-     AND    e.semester_id  = :semester_id"
-)->execute([
-    ':teacher_id'  => $teacherId,
-    ':semester_id' => $semesterId,
-]) ? $db->query(
-    "SELECT COUNT(DISTINCT g.id)
-     FROM   grades g
-     JOIN   enrollments e  ON e.id = g.enrollment_id
-     JOIN   teacher_subjects ts ON ts.subject_id = e.subject_id
-                AND ts.semester_id = e.semester_id
-     WHERE  ts.teacher_id  = {$teacherId}
-     AND    e.semester_id  = {$semesterId}"
-)->fetchColumn() : 0;
-
-// Cleaner approach
 $stmt = $db->prepare(
     "SELECT COUNT(DISTINCT g.id) AS graded,
             COUNT(DISTINCT e.id) AS total
@@ -80,8 +58,8 @@ $stmt->execute([
     ':semester_id' => $semesterId,
 ]);
 $gradeStats = $stmt->fetch(PDO::FETCH_ASSOC);
-$gradedCount  = (int) ($gradeStats['graded'] ?? 0);
-$totalStudentsEnrolled = (int) ($gradeStats['total'] ?? 0);
+$gradedCount           = (int) ($gradeStats['graded'] ?? 0);
+$totalStudentsEnrolled = (int) ($gradeStats['total']  ?? 0);
 
 // ── Average Grade Across My Subjects ─────────────────────────
 $stmt = $db->prepare(

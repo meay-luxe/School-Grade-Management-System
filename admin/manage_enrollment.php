@@ -180,7 +180,7 @@ $subjects = $db->query(
 
 // All students dropdown
 $students = $db->query(
-    "SELECT s.id, s.first_name, s.last_name, s.student_id AS student_number,
+    "SELECT s.id, s.first_name, s.last_name, s.student_number,
             s.year_level
      FROM   students s
      JOIN   users u ON u.id = s.user_id
@@ -192,7 +192,7 @@ $students = $db->query(
 $enrollmentsQuery = "
     SELECT e.*,
            s.first_name, s.last_name,
-           s.student_id AS student_number,
+           s.student_number,
            s.year_level,
            sub.name AS subject_name,
            sub.code AS subject_code,

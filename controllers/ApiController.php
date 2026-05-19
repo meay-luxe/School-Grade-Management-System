@@ -56,11 +56,13 @@ class ApiController {
             $this->error('Unauthorized. Bearer token required.', 401);
         }
 
-        // Validate token against users table
+        // Validate token against api_tokens table (consistent with api/grades.php)
         $stmt = $this->db->prepare(
-            "SELECT id, role, is_active
-             FROM   users
-             WHERE  api_token = :token
+            "SELECT at.user_id, u.role, u.is_active
+             FROM   api_tokens at
+             JOIN   users u ON u.id = at.user_id
+             WHERE  at.token = :token
+             AND    at.is_active = 1
              LIMIT  1"
         );
         $stmt->execute([':token' => $token]);
@@ -70,8 +72,8 @@ class ApiController {
             $this->error('Invalid or expired token.', 401);
         }
 
-        $this->userId  = (int) $user['id'];
-        $this->role    = $user['role'];
+        $this->userId = (int) $user['user_id'];
+        $this->role   = $user['role'];
     }
 
     // ══════════════════════════════════════════════════════════
@@ -136,7 +138,7 @@ class ApiController {
 
         $sql    = "SELECT g.*,
                           s.first_name, s.last_name,
-                          s.student_id AS student_number,
+                          s.student_number,
                           sub.code AS subject_code,
                           sub.name AS subject_name,
                           sem.name AS semester_name,
@@ -404,7 +406,7 @@ class ApiController {
         // Return updated grade
         $updated = $gradeModel->getByEnrollment($enrollmentId);
 
-        Auth::logAction("API: Saved grade for enrollment {$enrollmentId}");
+        $this->logApiAction("API: Saved grade for enrollment {$enrollmentId}");
         $this->success($updated, [], 'Grade saved successfully.');
     }
 
@@ -424,7 +426,7 @@ class ApiController {
             $this->error('Failed to toggle lock.', 400);
         }
 
-        Auth::logAction("API: Toggled lock for enrollment {$enrollmentId}");
+        $this->logApiAction("API: Toggled lock for enrollment {$enrollmentId}");
         $this->success([], [], 'Grade lock status updated.');
     }
 
@@ -449,7 +451,7 @@ class ApiController {
             $this->error('Failed to lock all grades.', 400);
         }
 
-        Auth::logAction(
+        $this->logApiAction(
             "API: Locked all grades for subject {$subjectId} sem {$semesterId}"
         );
         $this->success([], [], 'All grades locked successfully.');
@@ -501,6 +503,24 @@ class ApiController {
                 403
             );
         }
+    }
+
+    /**
+     * Log an action directly to audit_logs without requiring a session.
+     * Used by API endpoints that authenticate via Bearer token, not session.
+     */
+    private function logApiAction(string $action, string $details = ''): void {
+        if (!$this->userId) return;
+        DB::execute(
+            'INSERT INTO audit_logs (user_id, action, details, ip_address, created_at)
+             VALUES (?, ?, ?, ?, NOW())',
+            [
+                $this->userId,
+                $action,
+                $details,
+                $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+            ]
+        );
     }
 
     // ── Response Helpers ──────────────────────────────────────

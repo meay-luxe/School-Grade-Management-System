@@ -39,7 +39,7 @@ class Grade {
         $stmt = $this->db->prepare(
             "SELECT g.*,
                     s.first_name, s.last_name,
-                    s.student_id AS student_number,
+                    s.student_number,
                     e.id         AS enrollment_id,
                     e.status     AS enrollment_status
              FROM   enrollments e
@@ -98,7 +98,7 @@ class Grade {
         if (!empty($filters['search'])) {
             $sql .= " AND (s.first_name LIKE :search
                       OR   s.last_name  LIKE :search
-                      OR   s.student_id LIKE :search)";
+                      OR   s.student_number LIKE :search)";
             $params[':search'] = '%' . $filters['search'] . '%';
         }
 
@@ -122,9 +122,14 @@ class Grade {
             if ($existing && $existing['is_locked']) return false;
 
             // Calculate final grade
-            $finalGrade = GradeCalculator::calculateFinal($scores);
-            $gpa        = GradeCalculator::getGPA($finalGrade);
-            $standing   = GradeCalculator::getStanding($finalGrade);
+            $midterm    = $scores['midterm']    ?? null;
+            $finalExam  = $scores['final_exam'] ?? null;
+            $finalGrade = GradeCalculator::computeFinal(
+                $midterm  !== null ? (float) $midterm  : null,
+                $finalExam !== null ? (float) $finalExam : null
+            );
+            $gpa      = $finalGrade !== null ? GradeCalculator::gradeToGPA($finalGrade) : null;
+            $standing = GradeCalculator::assignRemarks($finalGrade);
 
             if ($existing) {
                 // Update

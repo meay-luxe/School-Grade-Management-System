@@ -5,6 +5,7 @@
    ============================================================ */
 
 require_once __DIR__ . '/../helpers/Auth.php';
+require_once __DIR__ . '/../config/App.php';
 
 Auth::startSession();
 
@@ -15,7 +16,7 @@ if (!empty($_SESSION['user_id'])) {
         'teacher' => '/teacher/dashboard.php',
         'student' => '/student/dashboard.php',
     ];
-    header('Location: ' . ($dashboards[$_SESSION['role']] ?? '/'));
+    App::redirect($dashboards[$_SESSION['role']] ?? '/');
     exit;
 }
 
@@ -37,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'teacher' => '/teacher/dashboard.php',
                 'student' => '/student/dashboard.php',
             ];
-            header('Location: ' . ($dashboards[$_SESSION['role']] ?? '/'));
+            App::redirect($dashboards[$_SESSION['role']] ?? '/');
             exit;
         } else {
             // SECURITY: vague error — don't reveal whether email or password was wrong
@@ -54,8 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>Sign In — GradeMS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/global.css">
-  <link rel="stylesheet" href="/assets/css/auth.css">
+  <link rel="stylesheet" href="<?= App::url('/assets/css/global.css') ?>">
+  <link rel="stylesheet" href="<?= App::url('/assets/css/auth.css') ?>">
 </head>
 <body>
 
@@ -77,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <!-- Login Form -->
-    <form method="POST" action="/auth/login.php">
+    <form method="POST" action="<?= App::url('/auth/login.php') ?>">
       <!-- SECURITY: CSRF token -->
       <?= Auth::csrfField() ?>
 
