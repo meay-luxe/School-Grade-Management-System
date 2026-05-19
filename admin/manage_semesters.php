@@ -162,7 +162,6 @@ $csrfToken = Auth::generateCsrf();
 $pageTitle = 'Manage Semesters';
 
 include '../shared/header.php';
-include '../shared/sidebar.php';
 ?>
 
 <div id="flash-messages"

@@ -202,7 +202,7 @@ class ApiController {
         $totalUnits  = 0;
         foreach ($grades as $g) {
             if ($g['final_grade'] !== null) {
-                $gpa          = GradeCalculator::getGPA((float) $g['final_grade']);
+                $gpa          = GradeCalculator::gradeToGPA((float) $g['final_grade']);
                 $totalPoints += $gpa * $g['units'];
                 $totalUnits  += $g['units'];
             }

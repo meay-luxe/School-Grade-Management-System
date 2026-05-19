@@ -227,7 +227,6 @@ $csrfToken = Auth::generateCsrf();
 $pageTitle = 'Manage Enrollment';
 
 include '../shared/header.php';
-include '../shared/sidebar.php';
 ?>
 
 <div id="flash-messages"

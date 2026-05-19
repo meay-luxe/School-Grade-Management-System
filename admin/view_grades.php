@@ -86,7 +86,6 @@ $csrfToken = Auth::generateCsrf();
 $pageTitle = 'View Grades';
 
 include '../shared/header.php';
-include '../shared/sidebar.php';
 ?>
 
 <div id="flash-messages"

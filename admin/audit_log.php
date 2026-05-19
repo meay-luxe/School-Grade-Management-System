@@ -96,7 +96,6 @@ $csrfToken = Auth::generateCsrf();
 $pageTitle = 'Audit Log';
 
 include '../shared/header.php';
-include '../shared/sidebar.php';
 ?>
 
 <div class="main-content">

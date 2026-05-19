@@ -76,7 +76,7 @@ if (!empty($gradedSubjects)) {
     $totalPoints = 0;
     $totalUnits  = 0;
     foreach ($gradedSubjects as $sub) {
-        $gpa         = GradeCalculator::getGPA((float) $sub['final_grade']);
+        $gpa         = GradeCalculator::gradeToGPA((float) $sub['final_grade']);
         $totalPoints += $gpa * $sub['units'];
         $totalUnits  += $sub['units'];
     }
@@ -102,7 +102,7 @@ if (!empty($allGrades)) {
     $totalPoints = 0;
     $totalUnits  = 0;
     foreach ($allGrades as $g) {
-        $gpa         = GradeCalculator::getGPA((float) $g['final_grade']);
+        $gpa         = GradeCalculator::gradeToGPA((float) $g['final_grade']);
         $totalPoints += $gpa * $g['units'];
         $totalUnits  += $g['units'];
     }
@@ -187,7 +187,7 @@ foreach ($allSemGrades as $row) {
     if (!isset($semGPAMap[$key])) {
         $semGPAMap[$key] = ['points' => 0, 'units' => 0];
     }
-    $gpa = GradeCalculator::getGPA((float) $row['final_grade']);
+    $gpa = GradeCalculator::gradeToGPA((float) $row['final_grade']);
     $semGPAMap[$key]['points'] += $gpa * $row['units'];
     $semGPAMap[$key]['units']  += $row['units'];
 }
@@ -216,7 +216,6 @@ $greeting     = $greetingHour < 12 ? 'Good Morning'
 $overallStanding = GradeCalculator::getStanding($overallGPA > 0 ? GradeCalculator::gradeToGPA($overallGPA) : null);
 
 include '../shared/header.php';
-include '../shared/sidebar.php';
 ?>
 
 <div class="main-content">

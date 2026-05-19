@@ -116,7 +116,6 @@ $classAvg      = $totalGraded > 0
 $pageTitle = 'Class List';
 
 include '../shared/header.php';
-include '../shared/sidebar.php';
 ?>
 
 <div class="main-content">

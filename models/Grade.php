@@ -61,7 +61,7 @@ class Grade {
         $sql = "SELECT g.*,
                        s.first_name    AS student_fname,
                        s.last_name     AS student_lname,
-                       s.student_id    AS student_number,
+                       s.student_number,
                        sub.name        AS subject_name,
                        sub.code        AS subject_code,
                        sub.units,

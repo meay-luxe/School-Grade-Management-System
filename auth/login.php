@@ -55,66 +55,115 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>Sign In — GradeMS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
   <link rel="stylesheet" href="<?= App::url('/assets/css/global.css') ?>">
   <link rel="stylesheet" href="<?= App::url('/assets/css/auth.css') ?>">
 </head>
 <body>
 
-<div class="auth-wrap">
+<div class="auth-page">
   <div class="auth-card">
 
-    <!-- Logo -->
-    <div class="auth-logo">
-      <div class="auth-logo-icon">🎓</div>
-      <div class="auth-logo-text">Grade<span>MS</span></div>
+    <!-- Header -->
+    <div class="auth-header">
+      <div class="auth-logo">🎓</div>
+      <div class="auth-title">Welcome back</div>
+      <div class="auth-subtitle">Sign in to access your dashboard</div>
     </div>
 
-    <div class="auth-title">Welcome back</div>
-    <div class="auth-subtitle">Sign in to access your dashboard</div>
+    <!-- Body -->
+    <div class="auth-body">
 
-    <!-- Error message -->
-    <?php if ($error): ?>
-      <div class="auth-error show"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
-    <?php endif; ?>
+      <!-- Error message -->
+      <?php if ($error): ?>
+        <div class="auth-alert auth-alert-error">
+          <span class="auth-alert-icon"><i class="fas fa-exclamation-circle"></i></span>
+          <?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>
+        </div>
+      <?php endif; ?>
 
-    <!-- Login Form -->
-    <form method="POST" action="<?= App::url('/auth/login.php') ?>">
-      <!-- SECURITY: CSRF token -->
-      <?= Auth::csrfField() ?>
+      <!-- Login Form -->
+      <form method="POST" action="<?= App::url('/auth/login.php') ?>" class="auth-form">
+        <?= Auth::csrfField() ?>
 
-      <div class="auth-field">
-        <label for="email">Email Address</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          placeholder="you@school.edu"
-          value="<?= htmlspecialchars($_POST['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-          required
-          autocomplete="email"
-        >
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address</label>
+          <div class="input-icon-wrap">
+            <i class="fas fa-envelope input-icon"></i>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-control"
+              placeholder="you@school.edu"
+              value="<?= htmlspecialchars($_POST['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+              required
+              autocomplete="email"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <div class="input-icon-wrap">
+            <i class="fas fa-lock input-icon"></i>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control"
+              placeholder="••••••••"
+              required
+              autocomplete="current-password"
+            >
+          </div>
+        </div>
+
+        <button type="submit" class="auth-submit-btn">
+          <i class="fas fa-sign-in-alt"></i> Sign In
+        </button>
+      </form>
+
+      <!-- Demo credentials -->
+      <div class="demo-credentials">
+        <div class="demo-credentials-title">
+          <i class="fas fa-info-circle"></i> Demo Accounts (password: <code>password</code>)
+        </div>
+        <div class="demo-item" onclick="fillLogin('admin@school.edu')">
+          <div class="demo-item-role">🛡️ Admin</div>
+          <div class="demo-item-creds">admin@school.edu</div>
+          <div class="demo-item-use">Use →</div>
+        </div>
+        <div class="demo-item" onclick="fillLogin('ana.reyes@school.edu')">
+          <div class="demo-item-role">👩‍🏫 Teacher</div>
+          <div class="demo-item-creds">ana.reyes@school.edu</div>
+          <div class="demo-item-use">Use →</div>
+        </div>
+        <div class="demo-item" onclick="fillLogin('maria.s@school.edu')">
+          <div class="demo-item-role">🎓 Student</div>
+          <div class="demo-item-creds">maria.s@school.edu</div>
+          <div class="demo-item-use">Use →</div>
+        </div>
       </div>
 
-      <div class="auth-field">
-        <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          placeholder="••••••••"
-          required
-          autocomplete="current-password"
-        >
+    </div><!-- /auth-body -->
+
+    <!-- Footer -->
+    <div class="auth-footer">
+      <div class="auth-footer-text">
+        GradeMS · School Grade Management System
       </div>
-
-      <button type="submit" class="btn-auth">Sign In →</button>
-    </form>
-
-    <div class="auth-demo-note">
-      Default admin: admin@school.edu / password
     </div>
-  </div>
-</div>
+
+  </div><!-- /auth-card -->
+</div><!-- /auth-page -->
+
+<script>
+function fillLogin(email) {
+  document.getElementById('email').value    = email;
+  document.getElementById('password').value = 'password';
+}
+</script>
 
 </body>
 </html>

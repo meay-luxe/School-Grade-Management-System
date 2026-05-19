@@ -5,10 +5,10 @@
 
 require_once 'helpers/Auth.php';
 require_once 'config/DB.php';
+require_once 'config/App.php';
 
 if (!Auth::isLoggedIn()) {
-    header('Location: auth/login.php');
-    exit();
+    App::redirect('/auth/login.php');
 }
 
 $db     = DB::getInstance();
@@ -26,15 +26,9 @@ $user->execute([':id' => $userId]);
 $user = $user->fetch(PDO::FETCH_ASSOC);
 
 // ── Fetch role profile ────────────────────────────────────────
+// Admins have no separate profile table — their data lives in users only.
 $profile = [];
-if ($role === 'admin') {
-    $stmt = $db->prepare(
-        "SELECT * FROM admins WHERE user_id = :uid LIMIT 1"
-    );
-    $stmt->execute([':uid' => $userId]);
-    $profile = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
-
-} elseif ($role === 'teacher') {
+if ($role === 'teacher') {
     $stmt = $db->prepare(
         "SELECT * FROM teachers WHERE user_id = :uid LIMIT 1"
     );
@@ -191,19 +185,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
 
                     if (move_uploaded_file($file['tmp_name'], $dest)) {
-                        // Delete old avatar
-                        if (!empty($user['avatar'])) {
-                            $old = __DIR__ . '/uploads/avatars/' . $user['avatar'];
+                        // Delete old photo
+                        if (!empty($user['photo_path'])) {
+                            $old = __DIR__ . '/uploads/avatars/' . $user['photo_path'];
                             if (file_exists($old)) unlink($old);
                         }
 
                         $db->prepare(
-                            "UPDATE users SET avatar = :avatar WHERE id = :id"
-                        )->execute([':avatar' => $filename, ':id' => $userId]);
+                            "UPDATE users SET photo_path = :photo_path WHERE id = :id"
+                        )->execute([':photo_path' => $filename, ':id' => $userId]);
 
                         Auth::logAction('Updated avatar');
                         $success = 'Avatar updated successfully.';
-                        $user['avatar'] = $filename;
+                        $user['photo_path'] = $filename;
 
                     } else {
                         $error = 'Failed to save avatar.';
@@ -226,7 +220,6 @@ $csrfToken = Auth::generateCsrf();
 $pageTitle = 'My Profile';
 
 include 'shared/header.php';
-include 'shared/sidebar.php';
 ?>
 
 <div id="flash-messages"
@@ -285,8 +278,8 @@ include 'shared/sidebar.php';
 
             <!-- Avatar Display -->
             <div style="position:relative;display:inline-block;margin-bottom:var(--space-4)">
-              <?php if (!empty($user['avatar'])): ?>
-                <img src="uploads/avatars/<?= htmlspecialchars($user['avatar']) ?>"
+              <?php if (!empty($user['photo_path'])): ?>
+                <img src="<?= App::url('/uploads/avatars/') . htmlspecialchars($user['photo_path']) ?>"
                      alt="Avatar"
                      class="avatar avatar-xl"
                      style="margin:0 auto;

@@ -148,7 +148,6 @@ $csrfToken = Auth::generateCsrf();
 $pageTitle = 'Manage Subjects';
 
 include '../shared/header.php';
-include '../shared/sidebar.php';
 ?>
 
 <!-- Flash Messages -->

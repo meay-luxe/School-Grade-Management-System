@@ -161,7 +161,6 @@ $topStudents = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $pageTitle = 'My Reports';
 
 include '../shared/header.php';
-include '../shared/sidebar.php';
 ?>
 
 <div class="main-content">

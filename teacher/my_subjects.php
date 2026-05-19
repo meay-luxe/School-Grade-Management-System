@@ -70,7 +70,6 @@ unset($sub);
 $pageTitle = 'My Subjects';
 
 include '../shared/header.php';
-include '../shared/sidebar.php';
 ?>
 
 <div class="main-content">

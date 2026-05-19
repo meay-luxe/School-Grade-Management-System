@@ -165,7 +165,6 @@ $greeting     = $greetingHour < 12 ? 'Good Morning'
               : 'Good Evening');
 
 include '../shared/header.php';
-include '../shared/sidebar.php';
 ?>
 
 <div class="main-content">
