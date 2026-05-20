@@ -164,54 +164,55 @@ CREATE TABLE IF NOT EXISTS api_tokens (
 
 -- ============================================================
 --  SEED DATA — development / demo
+--  All accounts use password: "password"
 -- ============================================================
 
--- ── Users (password for all accounts: "password") ──────────
+-- ── Users ──────────────────────────────────────────────────
 INSERT INTO users (name, email, password, role) VALUES
-  ('Dr. John Admin',    'admin@school.edu',     '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin'),
-  ('Prof. Ana Reyes',   'ana.reyes@school.edu', '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'teacher'),
-  ('Prof. Mark Torres', 'mark.t@school.edu',    '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'teacher'),
-  ('Maria Santos',      'maria.s@school.edu',   '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'student'),
-  ('Juan Dela Cruz',    'juan.dc@school.edu',   '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'student'),
-  ('Ana Lim',           'ana.lim@school.edu',   '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'student');
+  ('Dr. John Admin',    'admin@school.edu',     '$2y$10$6QklEl4.4.6HS5rjrWqTP.qTAbvEDA3qTwLYDn5PrN99LtXhyy2w2', 'admin'),
+  ('Prof. Ana Reyes',   'ana.reyes@school.edu', '$2y$10$6QklEl4.4.6HS5rjrWqTP.qTAbvEDA3qTwLYDn5PrN99LtXhyy2w2', 'teacher'),
+  ('Prof. Mark Torres', 'mark.t@school.edu',    '$2y$10$6QklEl4.4.6HS5rjrWqTP.qTAbvEDA3qTwLYDn5PrN99LtXhyy2w2', 'teacher'),
+  ('Maria Santos',      'maria.s@school.edu',   '$2y$10$6QklEl4.4.6HS5rjrWqTP.qTAbvEDA3qTwLYDn5PrN99LtXhyy2w2', 'student'),
+  ('Juan Dela Cruz',    'juan.dc@school.edu',   '$2y$10$6QklEl4.4.6HS5rjrWqTP.qTAbvEDA3qTwLYDn5PrN99LtXhyy2w2', 'student'),
+  ('Ana Lim',           'ana.lim@school.edu',   '$2y$10$6QklEl4.4.6HS5rjrWqTP.qTAbvEDA3qTwLYDn5PrN99LtXhyy2w2', 'student');
 
--- ── Teachers (now includes first_name, last_name, employee_id) ─
+-- ── Teachers ───────────────────────────────────────────────
 INSERT INTO teachers (user_id, employee_id, first_name, last_name, department, specialization) VALUES
   (2, 'EMP-001', 'Ana',  'Reyes',  'Computer Science', 'Programming'),
   (3, 'EMP-002', 'Mark', 'Torres', 'Physics',          'Applied Physics');
 
--- ── Students (now includes first_name, last_name) ──────────
+-- ── Students ───────────────────────────────────────────────
 INSERT INTO students (user_id, student_number, first_name, last_name, course, year_level, section) VALUES
   (4, '2024-0001', 'Maria', 'Santos',    'BSCS', '2nd Year', 'A'),
   (5, '2024-0002', 'Juan',  'Dela Cruz', 'BSIT', '1st Year', 'B'),
   (6, '2024-0003', 'Ana',   'Lim',       'BSCS', '3rd Year', 'A');
 
--- ── Semesters (now includes name column) ───────────────────
+-- ── Semesters (semester 1 is active) ───────────────────────
 INSERT INTO semesters (name, school_year, semester, is_active, grade_deadline) VALUES
-  ('1st Semester AY 2024-2025', 'AY 2024-2025', '1st Semester', 1, '2024-12-20'),
+  ('1st Semester AY 2024-2025', 'AY 2024-2025', '1st Semester', 1, '2025-12-20'),
   ('2nd Semester AY 2023-2024', 'AY 2023-2024', '2nd Semester', 0, '2024-06-15');
 
--- ── Subjects (now includes description, is_active) ─────────
+-- ── Subjects ───────────────────────────────────────────────
 INSERT INTO subjects (code, name, units, description, teacher_id, is_active) VALUES
   ('MATH101', 'Mathematics 101',  3, 'Fundamental mathematics concepts.',    1, 1),
   ('PHY201',  'Physics 201',      4, 'Mechanics, thermodynamics and waves.', 2, 1),
   ('ENG101',  'English 101',      3, 'Academic writing and communication.',  NULL, 1),
   ('CS101',   'CS Fundamentals',  3, 'Introduction to computer science.',    1, 1);
 
--- ── Teacher–Subject assignments per semester ───────────────
+-- ── Teacher–Subject assignments ────────────────────────────
 INSERT INTO teacher_subjects (teacher_id, subject_id, semester_id) VALUES
-  (1, 1, 1),  -- Ana Reyes  → MATH101, Sem 1
-  (2, 2, 1),  -- Mark Torres → PHY201, Sem 1
-  (1, 4, 1);  -- Ana Reyes  → CS101,   Sem 1
+  (1, 1, 1),  -- Ana Reyes   → MATH101
+  (2, 2, 1),  -- Mark Torres → PHY201
+  (1, 4, 1);  -- Ana Reyes   → CS101
 
 -- ── Enrollments ────────────────────────────────────────────
 INSERT INTO enrollments (student_id, subject_id, semester_id, status) VALUES
-  (1, 1, 1, 'enrolled'),
-  (1, 4, 1, 'enrolled'),
-  (2, 2, 1, 'enrolled'),
-  (3, 3, 1, 'enrolled');
+  (1, 1, 1, 'enrolled'),  -- Maria → MATH101
+  (1, 4, 1, 'enrolled'),  -- Maria → CS101
+  (2, 2, 1, 'enrolled'),  -- Juan  → PHY201
+  (3, 3, 1, 'enrolled');  -- Ana   → ENG101
 
--- ── Grades (now includes prelim, prefinal, final_exam, gpa, standing) ─
+-- ── Grades ─────────────────────────────────────────────────
 INSERT INTO grades
   (enrollment_id, prelim, midterm, prefinal, final_exam, finals, final_grade, gpa, standing, remarks)
 VALUES
@@ -219,5 +220,5 @@ VALUES
   (2, 70.00, 72.00, 68.00, 68.00, 68.00, 70.00, 2.50, 'Failed', 'Failed'),
   (3, 94.00, 95.00, 96.00, 97.00, 97.00, 96.00, 1.00, 'Passed', 'Passed');
 
--- ── Demo API token (token value: "demo-api-token-12345") ───
+-- ── Demo API token ──────────────────────────────────────────
 INSERT INTO api_tokens (user_id, token) VALUES (1, 'demo-api-token-12345');
