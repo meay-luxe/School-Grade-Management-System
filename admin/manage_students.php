@@ -159,15 +159,23 @@ include __DIR__ . '/../shared/header.php';
 ?>
 
 <div class="topbar">
-  <div>
-    <div class="topbar-title">Student Records</div>
-    <div class="topbar-subtitle text-secondary">Manage all enrolled students</div>
+  <div class="topbar-left">
+    <div>
+      <div class="topbar-title">Student Records</div>
+      <div class="topbar-subtitle">Manage all enrolled students</div>
+    </div>
   </div>
-  <div class="topbar-actions">
-    <button class="btn btn-glass" onclick="showModal('modal-import-csv')">📁 Import CSV</button>
-    <button class="btn btn-blue"  onclick="showModal('modal-add-student')">+ Add Student</button>
+  <div class="topbar-right">
+    <button class="btn btn-secondary btn-sm" onclick="showModal('modal-import-csv')">
+      <i class="fas fa-file-csv"></i> Import CSV
+    </button>
+    <button class="btn btn-primary btn-sm" onclick="showModal('modal-add-student')">
+      <i class="fas fa-plus"></i> Add Student
+    </button>
   </div>
 </div>
+
+<div class="page-content">
 
 <?php if ($success): ?>
   <div style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.25);border-radius:10px;padding:12px 18px;margin-bottom:20px;color:#4ade80;font-size:13.5px;">
@@ -339,5 +347,7 @@ include __DIR__ . '/../shared/header.php';
     </form>
   </div>
 </div>
+
+</div><!-- /page-content -->
 
 <?php include __DIR__ . '/../shared/footer.php'; ?>

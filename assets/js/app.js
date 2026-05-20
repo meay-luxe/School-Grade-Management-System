@@ -1796,3 +1796,46 @@ window.FormHelper = FormHelper;
 window.Utils = Utils;
 window.CSVExport = CSVExport;
 window.PrintHelper = PrintHelper;
+
+
+/* ══════════════════════════════════════════════════════════════
+   GLOBAL ALIASES
+   Some pages call showModal/closeModal/filterTable as globals.
+   Map them to the Modal module and Table module.
+══════════════════════════════════════════════════════════════ */
+
+function showModal(id) {
+  Modal.open(id);
+}
+
+function closeModal(id) {
+  const el = typeof id === 'string' ? document.getElementById(id) : id;
+  Modal.close(el);
+}
+
+function filterTable(input, tableId) {
+  const table = typeof tableId === 'string'
+    ? document.getElementById(tableId)
+    : tableId;
+  if (table) Table.filterTable(table, input.value);
+}
+
+/* ── Sidebar: also target #sidebar and #main IDs ── */
+document.addEventListener('DOMContentLoaded', () => {
+  // Patch Sidebar module to also find #sidebar and #main
+  const sidebarEl = document.querySelector('.sidebar') || document.getElementById('sidebar');
+  const mainEl    = document.querySelector('.main-content') || document.getElementById('main');
+  const topbarEl  = document.querySelector('.topbar');
+
+  if (sidebarEl && !Sidebar.el) {
+    Sidebar.el          = sidebarEl;
+    Sidebar.mainContent = mainEl;
+    Sidebar.topbar      = topbarEl;
+    Sidebar.bindToggle();
+    Sidebar.bindMobileMenu();
+    Sidebar.setActiveNavItem();
+  }
+
+  // Flash messages via data attributes (for pages using div#flash-messages)
+  Toast.showFlashMessages();
+});

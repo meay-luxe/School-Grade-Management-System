@@ -33,30 +33,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (empty($name) || empty($schoolYear)) {
                     $error = 'Semester name and school year are required.';
                 } else {
-                    // If setting as active, deactivate others
-                    if ($isActive) {
-                        $db->query("UPDATE semesters SET is_active = 0");
-                    }
-
-                    $stmt = $db->prepare(
-                        "INSERT INTO semesters
-                            (name, school_year, start_date, end_date, is_active)
-                         VALUES
-                            (:name, :school_year, :start_date, :end_date, :is_active)"
+                    // Check for duplicate before inserting
+                    $exists = $db->prepare(
+                        "SELECT COUNT(*) FROM semesters
+                         WHERE school_year = :sy AND name = :name"
                     );
-                    $result = $stmt->execute([
-                        ':name'        => $name,
-                        ':school_year' => $schoolYear,
-                        ':start_date'  => $startDate ?: null,
-                        ':end_date'    => $endDate   ?: null,
-                        ':is_active'   => $isActive,
-                    ]);
+                    $exists->execute([':sy' => $schoolYear, ':name' => $name]);
 
-                    if ($result) {
-                        Auth::logAction("Created semester: {$name} {$schoolYear}");
-                        $success = 'Semester created successfully.';
+                    if ((int) $exists->fetchColumn() > 0) {
+                        $error = "{$name} for {$schoolYear} already exists.";
                     } else {
-                        $error = 'Failed to create semester.';
+                        try {
+                            if ($isActive) {
+                                $db->query("UPDATE semesters SET is_active = 0");
+                            }
+
+                            $stmt = $db->prepare(
+                                "INSERT INTO semesters
+                                    (name, school_year, start_date, end_date, is_active)
+                                 VALUES
+                                    (:name, :school_year, :start_date, :end_date, :is_active)"
+                            );
+                            $stmt->execute([
+                                ':name'        => $name,
+                                ':school_year' => $schoolYear,
+                                ':start_date'  => $startDate ?: null,
+                                ':end_date'    => $endDate   ?: null,
+                                ':is_active'   => $isActive,
+                            ]);
+
+                            Auth::logAction("Created semester: {$name} {$schoolYear}");
+                            $success = 'Semester created successfully.';
+
+                        } catch (PDOException $e) {
+                            if ($e->getCode() === '23000') {
+                                $error = "{$name} for {$schoolYear} already exists.";
+                            } else {
+                                $error = 'Failed to create semester. Please try again.';
+                                error_log('[manage_semesters create] ' . $e->getMessage());
+                            }
+                        }
                     }
                 }
                 break;
@@ -73,33 +89,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (empty($name) || empty($schoolYear)) {
                     $error = 'Semester name and school year are required.';
                 } else {
-                    if ($isActive) {
-                        $db->query("UPDATE semesters SET is_active = 0");
-                    }
+                    try {
+                        if ($isActive) {
+                            $db->query("UPDATE semesters SET is_active = 0");
+                        }
 
-                    $stmt = $db->prepare(
-                        "UPDATE semesters
-                         SET    name        = :name,
-                                school_year = :school_year,
-                                start_date  = :start_date,
-                                end_date    = :end_date,
-                                is_active   = :is_active
-                         WHERE  id = :id"
-                    );
-                    $result = $stmt->execute([
-                        ':name'        => $name,
-                        ':school_year' => $schoolYear,
-                        ':start_date'  => $startDate ?: null,
-                        ':end_date'    => $endDate   ?: null,
-                        ':is_active'   => $isActive,
-                        ':id'          => $id,
-                    ]);
+                        $stmt = $db->prepare(
+                            "UPDATE semesters
+                             SET    name        = :name,
+                                    school_year = :school_year,
+                                    start_date  = :start_date,
+                                    end_date    = :end_date,
+                                    is_active   = :is_active
+                             WHERE  id = :id"
+                        );
+                        $stmt->execute([
+                            ':name'        => $name,
+                            ':school_year' => $schoolYear,
+                            ':start_date'  => $startDate ?: null,
+                            ':end_date'    => $endDate   ?: null,
+                            ':is_active'   => $isActive,
+                            ':id'          => $id,
+                        ]);
 
-                    if ($result) {
                         Auth::logAction("Updated semester ID: {$id}");
                         $success = 'Semester updated successfully.';
-                    } else {
-                        $error = 'Failed to update semester.';
+
+                    } catch (PDOException $e) {
+                        if ($e->getCode() === '23000') {
+                            $error = "{$name} for {$schoolYear} already exists.";
+                        } else {
+                            $error = 'Failed to update semester.';
+                            error_log('[manage_semesters update] ' . $e->getMessage());
+                        }
                     }
                 }
                 break;

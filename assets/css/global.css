@@ -121,7 +121,7 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -198,24 +198,25 @@ ol {
 
 .main-content {
   flex: 1;
-  margin-left: var(--sidebar-width);
+  margin-left: 0;
   min-height: 100vh;
+  min-width: 0;
   transition: margin-left var(--transition-base);
   display: flex;
   flex-direction: column;
 }
 
 .main-content.sidebar-collapsed {
-  margin-left: var(--sidebar-width-collapsed);
+  margin-left: 0;
 }
 
 .page-content {
   flex: 1;
   padding: var(--space-6);
   padding-top: calc(var(--topbar-height) + var(--space-6));
-  max-width: 1400px;
   width: 100%;
-  margin: 0 auto;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -2685,6 +2686,7 @@ textarea.form-control {
   display: flex;
   min-height: 100vh;
   background: var(--bg-base);
+  overflow: hidden;
 }
 
 /* #sidebar mirrors .sidebar */
@@ -2703,6 +2705,7 @@ textarea.form-control {
   z-index: var(--z-sidebar);
   transition: width var(--transition-base);
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 /* #main mirrors .main-content */
@@ -2710,9 +2713,13 @@ textarea.form-control {
   flex: 1;
   margin-left: var(--sidebar-width);
   min-height: 100vh;
+  min-width: 0;
+  max-width: calc(100vw - var(--sidebar-width));
   transition: margin-left var(--transition-base);
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* Sidebar inner elements used by sidebar.php */
@@ -2878,3 +2885,319 @@ textarea.form-control {
     margin-left: 0 !important;
   }
 }
+
+/* .main-content alias (used by admin/teacher/student pages) */
+.main-content {
+  flex: 1;
+  min-height: 100vh;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0 !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LEGACY CLASS ALIASES
+   Some pages use older class names. Map them to the design system.
+══════════════════════════════════════════════════════════════ */
+
+/* table-card → glass-card */
+.table-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow: hidden;
+  margin-bottom: var(--space-5);
+}
+
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--glass-border);
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.table-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* search-input (standalone, not wrapped) */
+.search-input {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  padding: var(--space-2) var(--space-3);
+  outline: none;
+  transition: var(--transition-fast);
+  font-family: var(--font-sans);
+}
+
+.search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+/* table inside table-card */
+.table-card table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-card table thead tr {
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.table-card table th {
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table-card table td {
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: middle;
+}
+
+.table-card table tbody tr:hover {
+  background: var(--glass-bg-hover);
+}
+
+.table-card table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* form-input / form-select aliases */
+.form-input {
+  width: 100%;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  padding: var(--space-3) var(--space-4);
+  outline: none;
+  transition: var(--transition-fast);
+  font-family: var(--font-sans);
+}
+
+.form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.form-select {
+  width: 100%;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  padding: var(--space-3) var(--space-4);
+  outline: none;
+  transition: var(--transition-fast);
+  font-family: var(--font-sans);
+  cursor: pointer;
+}
+
+.form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+/* form-grid layout */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.form-full {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}
+
+/* modal aliases used by manage_students / user_management */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  z-index: var(--z-modal);
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.modal-overlay.active,
+.modal-overlay:target {
+  display: flex;
+}
+
+.modal {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--space-6);
+  position: relative;
+  box-shadow: var(--glass-shadow-lg);
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.modal-sub {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: var(--space-5);
+}
+
+.modal-close {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: var(--transition-fast);
+}
+
+.modal-close:hover {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* JS helper: show modal */
+.modal-overlay.show {
+  display: flex;
+}
+
+/* grade-bar used in manage_grades / student grades */
+.grade-bar {
+  height: 4px;
+  background: var(--glass-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.grade-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+/* font-mono helper */
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.fs-13 {
+  font-size: 13px;
+}
+
+.fw-600 {
+  font-weight: 600;
+}
+
+/* section-gap */
+.section-gap {
+  margin-bottom: var(--space-6);
+}
+
+/* topbar-actions alias */
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* empty-state inside table-card */
+.table-card .empty-state {
+  padding: var(--space-10) var(--space-6);
+  text-align: center;
+}
+
+.empty-text {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* standing chips used in student/grades */
+.standing-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.standing-deans  { background: rgba(108,99,255,0.15); color: var(--primary-light); }
+.standing-good   { background: var(--success-bg);     color: var(--success); }
+.standing-atrisk { background: var(--danger-bg);      color: var(--danger); }
+
+/* badge-passed / badge-failed / badge-incomplete */
+.badge-passed     { background: var(--success-bg); color: var(--success); }
+.badge-failed     { background: var(--danger-bg);  color: var(--danger); }
+.badge-incomplete { background: var(--warning-bg); color: var(--warning); }
+.badge-locked     { background: var(--glass-bg);   color: var(--text-muted); }
+.badge-active     { background: var(--success-bg); color: var(--success); }
+.badge-inactive   { background: var(--glass-bg);   color: var(--text-muted); }
+.badge-student    { background: rgba(0,212,170,0.15); color: var(--accent-teal); }

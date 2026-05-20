@@ -120,14 +120,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $classData = [];
 if ($subjectId && $teacherId) {
     $classData = DB::fetchAll(
-        'SELECT e.id AS enrollment_id, u.name, s.student_number,
+        'SELECT e.id AS enrollment_id,
+                u.name,
+                s.student_number,
                 g.midterm, g.finals, g.final_grade, g.remarks, g.is_locked
-         FROM enrollments e
-         JOIN users u    ON e.student_id  = u.id
-         JOIN students s ON s.user_id     = u.id
+         FROM   enrollments e
+         JOIN   students s  ON s.id      = e.student_id
+         JOIN   users u     ON u.id      = s.user_id
          LEFT JOIN grades g ON g.enrollment_id = e.id
-         WHERE e.subject_id = ?
-         ORDER BY u.name ASC',
+         WHERE  e.subject_id = ?
+         ORDER  BY u.name ASC',
         [$subjectId]
     );
 }
@@ -136,18 +138,19 @@ include __DIR__ . '/../shared/header.php';
 ?>
 
 <div class="topbar">
-  <div>
-    <div class="topbar-title">
-      <?= $currentSubject
-        ? htmlspecialchars($currentSubject['code'] . ' — ' . $currentSubject['name'], ENT_QUOTES, 'UTF-8')
-        : 'Manage Grades' ?>
-    </div>
-    <div class="topbar-subtitle">
-      <span class="semester-active"><span class="dot-live"></span>1st Semester · AY 2024–2025</span>
+  <div class="topbar-left">
+    <div>
+      <div class="topbar-title">
+        <?= $currentSubject
+          ? htmlspecialchars($currentSubject['code'] . ' — ' . $currentSubject['name'], ENT_QUOTES, 'UTF-8')
+          : 'Manage Grades' ?>
+      </div>
+      <div class="topbar-subtitle">
+        <span class="semester-active"><span class="dot-live"></span>Enter & save student grades</span>
+      </div>
     </div>
   </div>
-  <div class="topbar-actions">
-    <!-- Subject switcher -->
+  <div class="topbar-right">
     <form method="GET" style="display:inline">
       <select class="search-input" name="subject_id" style="width:220px" onchange="this.form.submit()">
         <?php foreach ($mySubjects as $sub): ?>
@@ -157,9 +160,13 @@ include __DIR__ . '/../shared/header.php';
         <?php endforeach; ?>
       </select>
     </form>
-    <a href="<?= App::url('/teacher/my_subjects.php') ?>" class="btn btn-glass">← My Subjects</a>
+    <a href="<?= App::url('/teacher/my_subjects.php') ?>" class="btn btn-secondary btn-sm">
+      <i class="fas fa-arrow-left"></i> My Subjects
+    </a>
   </div>
 </div>
+
+<div class="page-content">
 
 <?php if ($success): ?>
   <div style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.25);border-radius:10px;padding:12px 18px;margin-bottom:20px;color:#4ade80;font-size:13.5px;">✅ <?= htmlspecialchars($success, ENT_QUOTES, 'UTF-8') ?></div>
@@ -270,6 +277,8 @@ include __DIR__ . '/../shared/header.php';
   <span style="color:#fb7185">&lt; 75 → Failed</span> ·
   <span style="color:#fbbf24">Finals missing → Incomplete</span>
 </div>
+
+</div><!-- /page-content -->
 
 <script>
 /* Live grade recalculation — mirrors GradeCalculator::computeFinal() */

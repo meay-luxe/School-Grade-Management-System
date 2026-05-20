@@ -1,4 +1,4 @@
-<?php
+r<?php
 /* ============================================================
    GradeMS — Application Config
    File: config/App.php

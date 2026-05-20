@@ -58,14 +58,20 @@ include __DIR__ . '/../shared/header.php';
 ?>
 
 <div class="topbar">
-  <div>
-    <div class="topbar-title">My Grade Records</div>
-    <div class="topbar-subtitle text-secondary">Complete academic history by semester</div>
+  <div class="topbar-left">
+    <div>
+      <div class="topbar-title">My Grade Records</div>
+      <div class="topbar-subtitle">Complete academic history by semester</div>
+    </div>
   </div>
-  <div class="topbar-actions">
-    <button class="btn btn-glass" onclick="window.print()">📥 Print Report</button>
+  <div class="topbar-right">
+    <button class="btn btn-secondary btn-sm" onclick="window.print()">
+      <i class="fas fa-print"></i> Print Report
+    </button>
   </div>
 </div>
+
+<div class="page-content">
 
 <!-- GPA Summary -->
 <div class="glass-card" style="padding:24px 28px;margin-bottom:24px;display:flex;align-items:center;gap:32px">
@@ -216,5 +222,7 @@ include __DIR__ . '/../shared/header.php';
     </div>
   <?php endforeach; ?>
 <?php endif; ?>
+
+</div><!-- /page-content -->
 
 <?php include __DIR__ . '/../shared/footer.php'; ?>

@@ -36,7 +36,6 @@ $nav = [
             ['icon' => '📈', 'text' => 'Reports',        'href' => App::url('/admin/reports.php')],
         ]],
         ['label' => 'SYSTEM', 'items' => [
-            ['icon' => '🔗', 'text' => 'JSON API',  'href' => App::url('/api/grades.php')],
             ['icon' => '🕵️', 'text' => 'Audit Log', 'href' => App::url('/admin/audit_log.php')],
             ['icon' => '👤', 'text' => 'Profile',   'href' => App::url('/profile.php')],
         ]],
@@ -49,7 +48,6 @@ $nav = [
             ['icon' => '📈', 'text' => 'My Reports',    'href' => App::url('/teacher/reports.php')],
         ]],
         ['label' => 'ACCOUNT', 'items' => [
-            ['icon' => '🔗', 'text' => 'JSON API', 'href' => App::url('/api/grades.php')],
             ['icon' => '👤', 'text' => 'Profile',  'href' => App::url('/profile.php')],
         ]],
     ],

@@ -32,13 +32,12 @@ $activeSemester = $db->query(
 
 $semesterId = $activeSemester['id'] ?? 0;
 
-// ── Current Enrollments ───────────────────────────────────────
+// ── Current Enrollments (active semester) ────────────────────
 $stmt = $db->prepare(
     "SELECT e.*,
             sub.name        AS subject_name,
             sub.code        AS subject_code,
             sub.units,
-            sub.description AS subject_desc,
             g.prelim,
             g.midterm,
             g.prefinal,
@@ -47,27 +46,31 @@ $stmt = $db->prepare(
             g.gpa,
             g.standing,
             g.is_locked,
+            sem.name        AS semester_name,
             t.first_name    AS teacher_fname,
             t.last_name     AS teacher_lname
      FROM   enrollments e
      JOIN   subjects sub ON sub.id = e.subject_id
+     JOIN   semesters sem ON sem.id = e.semester_id
      LEFT JOIN grades g  ON g.enrollment_id = e.id
      LEFT JOIN teacher_subjects ts ON ts.subject_id  = sub.id
                   AND ts.semester_id = e.semester_id
      LEFT JOIN teachers t ON t.id = ts.teacher_id
      WHERE  e.student_id  = :student_id
-     AND    e.semester_id = :semester_id
-     ORDER  BY sub.name"
+     ORDER  BY sem.school_year DESC, sem.id DESC, sub.name"
 );
-$stmt->execute([
-    ':student_id'  => $studentId,
-    ':semester_id' => $semesterId,
-]);
+$stmt->execute([':student_id' => $studentId]);
 $currentSubjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Filter to current semester for the GPA ring
+$currentSemSubjects = array_filter(
+    $currentSubjects,
+    fn($s) => $s['semester_id'] == $semesterId
+);
 
 // ── Current Semester GPA ──────────────────────────────────────
 $gradedSubjects = array_filter(
-    $currentSubjects,
+    $currentSemSubjects,
     fn($s) => $s['final_grade'] !== null
 );
 
@@ -112,17 +115,20 @@ if (!empty($allGrades)) {
 }
 
 // ── Stats ─────────────────────────────────────────────────────
-$totalSubjects  = count($currentSubjects);
-$totalGraded    = count($gradedSubjects);
-$totalPassed    = count(array_filter(
-    $gradedSubjects,
-    fn($s) => (float) $s['final_grade'] >= 75
-));
-$totalFailed    = count(array_filter(
-    $gradedSubjects,
-    fn($s) => (float) $s['final_grade'] <  75
-));
+// Current semester subjects count
+$totalSubjects      = count($currentSubjects);
+$totalGraded        = count($gradedSubjects);  // graded this semester
 $totalUnitsEnrolled = array_sum(array_column($currentSubjects, 'units'));
+
+// All-time passed/failed (across ALL semesters)
+$totalPassed = count(array_filter(
+    $allGrades,
+    fn($g) => (float) $g['final_grade'] >= 75
+));
+$totalFailed = count(array_filter(
+    $allGrades,
+    fn($g) => (float) $g['final_grade'] < 75
+));
 
 // ── All Semester History (for grades.php link) ────────────────
 $semesterHistory = $db->prepare(
@@ -286,7 +292,7 @@ include '../shared/header.php';
             </p>
             <div class="mt-2">
               <span class="badge badge-primary">
-                <?= htmlspecialchars($student['student_id']) ?>
+                <?= htmlspecialchars($student['student_number'] ?? '') ?>
               </span>
             </div>
           </div>
@@ -330,7 +336,7 @@ include '../shared/header.php';
             <div class="stat-label">Passed</div>
             <div class="stat-value"><?= $totalPassed ?></div>
             <div class="stat-change up">
-              of <?= $totalGraded ?> graded
+              all time
             </div>
           </div>
         </div>
